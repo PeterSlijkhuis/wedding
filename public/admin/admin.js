@@ -85,7 +85,7 @@ async function renderCoverPicker() {
   const { photos } = await get("/api/photos");
   $("cover-picker").replaceChildren(
     el("label", {}, el("input", { type: "radio", name: "cover", value: "0", checked: !site.coverPhoto }), el("span", { class: "none" }, t("admin.noCover"))),
-    ...photos.map((id) => el("label", {},
+    ...photos.map((id) => el("label", { title: t("tip.cover") },
       el("input", { type: "radio", name: "cover", value: String(id), checked: site.coverPhoto === id }),
       el("img", { src: `/api/photos/${id}`, loading: "lazy", alt: "" }))));
 }
@@ -210,11 +210,11 @@ async function renderDashboard() {
   $("chips").replaceChildren(...[
     site.date ? el("span", { class: "chip" }, formatDate(site.date)) : null,
     site.location ? el("span", { class: "chip" }, site.location) : null,
-    el("button", { type: "button", class: "chip", onclick: () => $("copy").click() }, t("admin.share")),
-    el("a", { class: "chip", href: "/home", target: "_blank", rel: "noopener" }, t("admin.openSite"))].filter(Boolean));
+    el("button", { type: "button", class: "chip", title: t("tip.copy"), onclick: () => $("copy").click() }, t("admin.share")),
+    el("a", { class: "chip", href: "/home", target: "_blank", rel: "noopener", title: t("tip.openSite") }, t("admin.openSite"))].filter(Boolean));
   $("tiles").replaceChildren(...TILES.map(([view, icon, [c1, c2], labelKey]) => {
     const soon = !(view in statusText);
-    return el(soon ? "span" : "a", { class: soon ? "tile soon" : "tile", href: soon ? null : `#${view}` },
+    return el(soon ? "span" : "a", { class: soon ? "tile soon" : "tile", href: soon ? null : `#${view}`, title: t(soon ? "tip.soon" : `tip.tile.${view}`) },
       el("span", { class: "icon", style: `--c1:${c1};--c2:${c2}` }, icon),
       el("b", {}, t(labelKey)),
       el("small", {}, soon ? t("admin.soon") : statusText[view]));
@@ -286,6 +286,7 @@ async function renderPhotos() {
     el("img", { src: `/api/photos/${id}`, loading: "lazy", alt: "" }),
     el("button", {
       type: "button",
+      title: t("tip.deletePhoto"),
       onclick: async () => {
         if (!confirm(t("admin.confirmDelete"))) return;
         await post("/api/admin/photos/delete", { id });

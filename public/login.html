@@ -7,14 +7,14 @@
   <link rel="stylesheet" href="/css/site.css">
 </head>
 <body>
-  <header><span></span><select class="lang" aria-label="Language"></select></header>
+  <header><span></span><select class="lang" data-i18n-title="tip.lang"></select></header>
   <main>
     <h1 data-i18n="login.title"></h1>
     <form class="card" id="login">
       <label for="password" data-i18n="login.password"></label>
       <input id="password" type="password" autocomplete="current-password" required autofocus>
       <p class="error" id="error" role="alert"></p>
-      <button type="submit" data-i18n="login.submit"></button>
+      <button type="submit" data-i18n="login.submit" data-i18n-title="tip.login"></button>
     </form>
   </main>
   <script type="module">

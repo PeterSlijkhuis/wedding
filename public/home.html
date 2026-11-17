@@ -17,13 +17,13 @@
       <div class="countdown" id="countdown"></div>
       <p class="muted" id="deadline"></p>
       <p id="hello" data-i18n="home.hello"></p>
-      <button type="button" id="reopen" hidden data-i18n="home.message"></button>
+      <button type="button" id="reopen" hidden data-i18n-title="tip.reopen" data-i18n="home.message"></button>
     </div>
     <div class="tiles" id="tiles"></div>
   </main>
 
   <dialog class="sheet" id="message">
-    <button type="button" class="close" id="msg-close" aria-label="Close">&times;</button>
+    <button type="button" class="close" id="msg-close" data-i18n-title="tip.close">&times;</button>
     <h2 id="msg-title"></h2>
     <img class="sprig-small" src="/img/sprig.svg" alt="">
     <div id="msg-body"></div>
@@ -51,10 +51,9 @@
       ...pages.map((s) => el("a", { href: pageHref(s) }, t(`page.${s}`))),
       el("a", { href: "/rsvp" }, t("nav.rsvp")));
 
-    // "Message from the couple": every language that has text, the visitor's own first. Shown once per visit.
-    const lang = document.documentElement.lang;
-    const { pages: messages } = await get("/api/pages?slug=welcome&all=1");
-    messages.sort((a, b) => (b.lang === lang) - (a.lang === lang));
+    // "Message from the couple" in the selected language (English when missing). Shown once per visit.
+    const message = await get(`/api/pages?slug=welcome&lang=${document.documentElement.lang}`);
+    const messages = message.body ? [message] : [];
     if (messages.length) {
       $("hello").hidden = true;
       $("msg-title").textContent = messages.map((m) => m.title).filter(Boolean).join(" / ") || t("home.message");

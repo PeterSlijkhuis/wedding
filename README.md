@@ -15,7 +15,7 @@ npm run dev                           # open http://localhost:8787
 
 Log in with the admin password (`change-me` locally). `/admin/` is a dashboard of tiles with a live preview of your site next to it, and a menu (top left) with every section:
 
-- Event details: names, date, location, RSVP deadline, countdown, a greeting per language (the landing page shows all of them) and meal options
+- Event details: names, date, location, RSVP deadline, countdown, a greeting per language (guests see the one for the language they pick, or English) and meal options
 - Design: pick a theme (Sage, Classic, Modern, Garden), an accent color and a cover photo
 - Website: the home page message and the text pages (Our story, Schedule, Travel, FAQ, Gifts) per language; a page with no text stays hidden
 - Photos: uploaded from your device (resized there, stored in free Cloudflare KV), visible only to people with the guest password

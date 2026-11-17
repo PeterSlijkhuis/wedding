@@ -9,28 +9,31 @@
 <body>
   <div class="hero">
     <header>
-      <a id="admin-link" href="/admin/" data-i18n="nav.admin" hidden></a>
-      <select class="lang" aria-label="Language"></select>
+      <a id="admin-link" href="/admin/" data-i18n="nav.admin" data-i18n-title="tip.admin" hidden></a>
+      <select class="lang" data-i18n-title="tip.lang"></select>
     </header>
     <div class="center">
       <img class="sprig" src="/img/sprig.svg" alt="">
       <h1 id="names"></h1>
       <div class="date" id="date"></div>
       <div class="date" id="location" style="text-transform:none;letter-spacing:0"></div>
+      <div class="date" id="countdown" style="margin-top:.4rem"></div>
       <div id="tagline" style="margin-top:1rem"></div>
-      <a class="btn" href="/home" data-i18n="landing.enter"></a>
+      <a class="btn" href="/home" data-i18n="landing.enter" data-i18n-title="tip.enter"></a>
     </div>
   </div>
   <script type="module">
-    import { init, get, el, t, formatDate } from "/js/app.js";
+    import { init, get, el, t, formatDate, daysUntil } from "/js/app.js";
     const site = await init();
     document.getElementById("names").textContent = site.names;
     document.getElementById("date").textContent = formatDate(site.date);
     document.getElementById("location").textContent = site.location;
-    // Show the greeting in every language that has one, the visitor's own first.
+    // Greeting in the selected language, English when that language has none.
     const lang = document.documentElement.lang;
-    const lines = Object.entries(site.tagline).sort(([a], [b]) => (b === lang) - (a === lang)).map(([, line]) => line);
-    document.getElementById("tagline").replaceChildren(...(lines.length ? lines : [t("home.welcome")]).map((line) => el("p", { class: "tagline" }, line)));
+    const line = site.tagline[lang] || site.tagline.en || t("home.welcome");
+    document.getElementById("tagline").replaceChildren(el("p", { class: "tagline" }, line));
+    const days = site.countdown ? daysUntil(site.date) : null;
+    if (days) document.getElementById("countdown").textContent = `${days} ${t("home.countdown")}`;
     // Way back into the admin portal for the couple.
     if ((await get("/api/me")).role === "admin") document.getElementById("admin-link").hidden = false;
   </script>

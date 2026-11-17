@@ -10,27 +10,27 @@
 <body class="admin" data-mode="dashboard">
   <aside id="panel">
     <div id="editor-top" hidden>
-      <button type="button" class="icon-btn" id="menu-open" aria-label="Menu">&#9776;</button>
+      <button type="button" class="icon-btn" id="menu-open" data-i18n-title="tip.menu">&#9776;</button>
       <strong id="section-title"></strong>
     </div>
 
     <nav id="drawer" hidden aria-label="Menu">
       <div class="drawer-head">
-        <a href="#dashboard" class="drawer-home" id="drawer-home"><span aria-hidden="true">&#8962;</span> <span data-i18n="admin.dashboard"></span></a>
-        <button type="button" class="icon-btn" id="menu-close" aria-label="Close">&times;</button>
+        <a href="#dashboard" class="drawer-home" id="drawer-home" data-i18n-title="tip.dashboard"><span aria-hidden="true">&#8962;</span> <span data-i18n="admin.dashboard"></span></a>
+        <button type="button" class="icon-btn" id="menu-close" data-i18n-title="tip.close">&times;</button>
       </div>
       <h3 data-i18n="admin.group.website"></h3>
-      <a href="#details" data-i18n="admin.tile.details"></a>
-      <a href="#design" data-i18n="admin.tile.design"></a>
-      <a href="#photos" data-i18n="admin.tile.photos"></a>
-      <a href="#pages" data-i18n="admin.tile.website"></a>
+      <a href="#details" data-i18n="admin.tile.details" data-i18n-title="tip.tile.details"></a>
+      <a href="#design" data-i18n="admin.tile.design" data-i18n-title="tip.tile.design"></a>
+      <a href="#photos" data-i18n="admin.tile.photos" data-i18n-title="tip.tile.photos"></a>
+      <a href="#pages" data-i18n="admin.tile.website" data-i18n-title="tip.tile.pages"></a>
       <h3 data-i18n="admin.group.planning"></h3>
-      <a href="#guests" data-i18n="admin.tile.guests"></a>
-      <a href="#rsvp" data-i18n="admin.tile.rsvp"></a>
-      <a class="soon" aria-disabled="true"><span data-i18n="admin.tile.tables"></span> <em data-i18n="admin.soon"></em></a>
-      <a class="soon" aria-disabled="true"><span data-i18n="admin.tile.drinks"></span> <em data-i18n="admin.soon"></em></a>
+      <a href="#guests" data-i18n="admin.tile.guests" data-i18n-title="tip.tile.guests"></a>
+      <a href="#rsvp" data-i18n="admin.tile.rsvp" data-i18n-title="tip.tile.rsvp"></a>
+      <a class="soon" aria-disabled="true" data-i18n-title="tip.soon"><span data-i18n="admin.tile.tables"></span> <em data-i18n="admin.soon"></em></a>
+      <a class="soon" aria-disabled="true" data-i18n-title="tip.soon"><span data-i18n="admin.tile.drinks"></span> <em data-i18n="admin.soon"></em></a>
       <h3 data-i18n="admin.group.settings"></h3>
-      <a href="#privacy" data-i18n="admin.tile.privacy"></a>
+      <a href="#privacy" data-i18n="admin.tile.privacy" data-i18n-title="tip.tile.privacy"></a>
       <div class="drawer-foot"><b id="drawer-names"></b><small id="drawer-date"></small></div>
     </nav>
 
@@ -68,7 +68,7 @@
         <label for="accent" data-i18n="admin.accent"></label>
         <div class="row-inline">
           <input id="accent" type="color">
-          <button type="button" class="link" id="accent-reset" data-i18n="admin.accentReset"></button>
+          <button type="button" class="link" id="accent-reset" data-i18n-title="tip.accentReset" data-i18n="admin.accentReset"></button>
         </div>
         <label style="margin-top:1.2rem" data-i18n="admin.cover"></label>
         <div class="gallery" id="cover-picker"></div>
@@ -101,7 +101,7 @@
           <label for="party-names" data-i18n="admin.partyNames"></label>
           <textarea id="party-names" rows="3" required></textarea>
           <p class="status" role="status"></p>
-          <button type="submit" data-i18n="admin.add"></button>
+          <button type="submit" data-i18n="admin.add" data-i18n-title="tip.add"></button>
         </form>
       </section>
 
@@ -122,26 +122,26 @@
 
     <footer id="savebar" hidden>
       <span id="savestate" role="status"></span>
-      <button type="button" class="ghost" id="cancel" data-i18n="admin.cancel"></button>
-      <button type="submit" id="save" data-i18n="admin.save"></button>
+      <button type="button" class="ghost" id="cancel" data-i18n-title="tip.cancel" data-i18n="admin.cancel"></button>
+      <button type="submit" id="save" data-i18n-title="tip.save" data-i18n="admin.save"></button>
     </footer>
   </aside>
 
   <section id="stage">
     <div class="stage-bar">
-      <select id="preview-page" aria-label="Preview"></select>
+      <select id="preview-page" data-i18n-title="tip.previewPage"></select>
       <span class="devices">
-        <button type="button" id="dev-desktop" aria-pressed="true" aria-label="Desktop">&#128421;</button>
-        <button type="button" id="dev-mobile" aria-pressed="false" aria-label="Mobile">&#128241;</button>
+        <button type="button" id="dev-desktop" aria-pressed="true" data-i18n-title="tip.desktop">&#128421;</button>
+        <button type="button" id="dev-mobile" aria-pressed="false" data-i18n-title="tip.mobile">&#128241;</button>
       </span>
       <span class="published">
         <i class="dot"></i><span data-i18n="admin.published"></span> <b id="host"></b>
-        <button type="button" class="link" id="copy" data-i18n="admin.share"></button>
-        <a id="open-site" href="/home" target="_blank" rel="noopener" data-i18n="admin.openSite"></a>
+        <button type="button" class="link" id="copy" data-i18n-title="tip.copy" data-i18n="admin.share"></button>
+        <a id="open-site" data-i18n-title="tip.openSite" href="/home" target="_blank" rel="noopener" data-i18n="admin.openSite"></a>
       </span>
       <span class="who">
-        <select class="lang" aria-label="Language"></select>
-        <button type="button" class="link" id="logout" data-i18n="nav.logout"></button>
+        <select class="lang" data-i18n-title="tip.lang"></select>
+        <button type="button" class="link" id="logout" data-i18n-title="tip.logout" data-i18n="nav.logout"></button>
       </span>
     </div>
     <div id="device"><iframe id="preview" title="Preview"></iframe></div>

@@ -74,6 +74,7 @@ function bindLangSelect() {
 
 function translateDom() {
   document.querySelectorAll("[data-i18n]").forEach((node) => { node.textContent = t(node.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-title]").forEach((node) => { node.title = t(node.dataset.i18nTitle); node.setAttribute("aria-label", node.title); });
   document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => { node.placeholder = t(node.dataset.i18nPlaceholder); });
 }
 
@@ -117,9 +118,9 @@ export async function guestHeader(site) {
   const links = [["/home", t("nav.home")], ...pages.map((s) => [pageHref(s), t(`page.${s}`)]), ["/rsvp", t("nav.rsvp")]];
   document.querySelector("header").replaceChildren(
     el("span", { class: "tools" },
-      role === "admin" ? el("a", { href: "/admin/" }, t("nav.admin")) : null,
-      el("select", { class: "lang", "aria-label": "Language" }),
-      el("button", { class: "link", onclick: logout }, t("nav.logout"))),
+      role === "admin" ? el("a", { href: "/admin/", title: t("tip.admin") }, t("nav.admin")) : null,
+      el("select", { class: "lang", "aria-label": t("tip.lang"), title: t("tip.lang") }),
+      el("button", { class: "link", onclick: logout, title: t("tip.logout") }, t("nav.logout"))),
     el("a", { class: "site-title", href: "/home" }, site.names),
     el("nav", {}, ...links.map(([href, label]) => el("a", { href, "aria-current": href === here ? "page" : null }, label))));
   bindLangSelect();
