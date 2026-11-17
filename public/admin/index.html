@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wedding admin</title>
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <header>
+    <span><a href="/" data-i18n="nav.site"></a> · <button class="link" id="logout" data-i18n="nav.logout"></button></span>
+    <select class="lang" aria-label="Language"></select>
+  </header>
+  <main>
+    <h1 data-i18n="admin.title"></h1>
+    <form class="card" id="guest-password">
+      <label for="password" data-i18n="admin.guestPassword"></label>
+      <input id="password" type="text" minlength="6" required autocomplete="off">
+      <p id="status" role="status"></p>
+      <button type="submit" data-i18n="admin.save"></button>
+    </form>
+  </main>
+  <script type="module">
+    import { initI18n, post, t, logout } from "/js/app.js";
+    await initI18n();
+    document.getElementById("logout").onclick = logout;
+    document.getElementById("guest-password").onsubmit = async (e) => {
+      e.preventDefault();
+      const status = document.getElementById("status");
+      try {
+        await post("/api/admin/guest-password", { password: document.getElementById("password").value });
+        status.className = "ok";
+        status.textContent = t("admin.saved");
+      } catch (err) {
+        status.className = "error";
+        status.textContent = err.message;
+      }
+    };
+  </script>
+</body>
+</html>

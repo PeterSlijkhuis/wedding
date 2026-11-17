@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wedding</title>
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <header><span></span><select class="lang" aria-label="Language"></select></header>
+  <main>
+    <h1 data-i18n="login.title"></h1>
+    <form class="card" id="login">
+      <label for="password" data-i18n="login.password"></label>
+      <input id="password" type="password" autocomplete="current-password" required autofocus>
+      <p class="error" id="error" role="alert"></p>
+      <button type="submit" data-i18n="login.submit"></button>
+    </form>
+  </main>
+  <script type="module">
+    import { initI18n, post, t } from "/js/app.js";
+    await initI18n();
+    document.getElementById("login").onsubmit = async (e) => {
+      e.preventDefault();
+      const error = document.getElementById("error");
+      error.textContent = "";
+      try {
+        const { role } = await post("/api/login", { password: document.getElementById("password").value });
+        const next = new URLSearchParams(location.search).get("next");
+        location.href = next?.startsWith("/") && !next.startsWith("//") ? next : role === "admin" ? "/admin/" : "/";
+      } catch (err) {
+        error.textContent = err.message === "Wrong password" ? t("login.wrong") : err.message;
+      }
+    };
+  </script>
+</body>
+</html>

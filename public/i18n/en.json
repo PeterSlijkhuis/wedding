@@ -1,0 +1,13 @@
+{
+  "login.title": "Welcome",
+  "login.password": "Password",
+  "login.submit": "Enter",
+  "login.wrong": "Wrong password, please try again.",
+  "nav.logout": "Log out",
+  "nav.site": "View site",
+  "home.welcome": "We're getting married!",
+  "admin.title": "Admin",
+  "admin.guestPassword": "Guest password (shared with all guests)",
+  "admin.save": "Save",
+  "admin.saved": "Saved. Guests can now log in with this password."
+}

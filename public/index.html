@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wedding</title>
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <header>
+    <button class="link" id="logout" data-i18n="nav.logout"></button>
+    <select class="lang" aria-label="Language"></select>
+  </header>
+  <main>
+    <h1 data-i18n="home.welcome"></h1>
+  </main>
+  <script type="module">
+    import { initI18n, logout } from "/js/app.js";
+    await initI18n();
+    document.getElementById("logout").onclick = logout;
+  </script>
+</body>
+</html>

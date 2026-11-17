@@ -1,0 +1,13 @@
+{
+  "login.title": "Welkom",
+  "login.password": "Wachtwoord",
+  "login.submit": "Binnenkomen",
+  "login.wrong": "Verkeerd wachtwoord, probeer het opnieuw.",
+  "nav.logout": "Uitloggen",
+  "nav.site": "Bekijk site",
+  "home.welcome": "Wij gaan trouwen!",
+  "admin.title": "Beheer",
+  "admin.guestPassword": "Gastenwachtwoord (gedeeld met alle gasten)",
+  "admin.save": "Opslaan",
+  "admin.saved": "Opgeslagen. Gasten kunnen nu inloggen met dit wachtwoord."
+}

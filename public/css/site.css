@@ -1,0 +1,24 @@
+:root {
+  --bg: #fbf8f4;
+  --text: #2b2622;
+  --muted: #7a7068;
+  --accent: #9c6b4e;
+  --card: #ffffff;
+  --border: #e6ddd3;
+  --error: #b3261e;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; gap: 1rem; flex-wrap: wrap; }
+main { max-width: 36rem; margin: 0 auto; padding: 2rem 1rem; }
+h1 { font-weight: normal; font-size: 2.2rem; text-align: center; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
+label { display: block; margin-bottom: 0.4rem; color: var(--muted); }
+input, select, button { font: inherit; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid var(--border); }
+input { width: 100%; margin-bottom: 1rem; background: #fff; }
+button { background: var(--accent); color: #fff; border: none; cursor: pointer; }
+button.link { background: none; color: var(--accent); padding: 0; text-decoration: underline; }
+.error { color: var(--error); min-height: 1.6em; }
+.ok { color: var(--accent); min-height: 1.6em; }

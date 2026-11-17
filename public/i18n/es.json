@@ -1,0 +1,13 @@
+{
+  "login.title": "Bienvenidos",
+  "login.password": "Contraseña",
+  "login.submit": "Entrar",
+  "login.wrong": "Contraseña incorrecta, inténtalo de nuevo.",
+  "nav.logout": "Cerrar sesión",
+  "nav.site": "Ver sitio",
+  "home.welcome": "¡Nos casamos!",
+  "admin.title": "Administración",
+  "admin.guestPassword": "Contraseña de invitados (compartida con todos)",
+  "admin.save": "Guardar",
+  "admin.saved": "Guardado. Los invitados ya pueden entrar con esta contraseña."
+}
