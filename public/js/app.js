@@ -1,4 +1,5 @@
 // Shared page helpers: translations, theme, JSON API calls and a tiny DOM builder.
+import { applyDesign } from "./designs.js";
 
 export const LANGUAGES = { en: "English", es: "Español", nl: "Nederlands", mk: "Македонски" };
 let strings = {};
@@ -85,8 +86,7 @@ export async function init() {
   if (!langRes.ok) throw new Error(`Missing translation file /i18n/${lang}.json`);
   strings = await langRes.json();
   document.documentElement.lang = lang;
-  document.documentElement.dataset.theme = site.theme;
-  if (site.accent) document.documentElement.style.setProperty("--accent", site.accent);
+  applyDesign(document, site);
   document.title = site.names;
   translateDom();
   bindLangSelect();

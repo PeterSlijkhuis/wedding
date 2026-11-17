@@ -2,7 +2,7 @@
 import { HttpError, json, body, getSetting, setSetting } from "./util.js";
 import { validateSite, validatePage, validateRsvp, validatePhoto, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
 
-const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", location: "", countdown: false, tagline: {}, theme: "sage", accent: "", coverPhoto: 0, meals: [] };
+const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", location: "", countdown: false, tagline: {}, theme: "sage", palette: "", font: "", layout: "", art: "", accent: "", coverPhoto: 0, meals: [] };
 
 async function loadSite(env) {
   const raw = await getSetting(env, "site");
@@ -41,8 +41,8 @@ async function loadParties(env, ids = null) {
 const routes = {
   // Public: only what the landing page may show.
   "GET /api/site": async ({ env }) => {
-    const { names, date, location, countdown, rsvpDeadline, tagline, theme, accent, coverPhoto } = await loadSite(env);
-    return json({ names, date, location, countdown, rsvpDeadline, tagline, theme, accent, coverPhoto });
+    const { meals, ...site } = await loadSite(env); // meal options are for logged-in guests only
+    return json(site);
   },
   "GET /api/admin/site": async ({ env, role }) => {
     needAdmin(role);

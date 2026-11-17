@@ -10,14 +10,16 @@
   <header></header>
   <main>
     <div class="home-hero">
-      <img class="cover" id="cover" alt="" hidden>
-      <img class="sprig-small" src="/img/sprig.svg" alt="">
-      <div class="date" id="date"></div>
-      <div class="location" id="location"></div>
-      <div class="countdown" id="countdown"></div>
-      <p class="muted" id="deadline"></p>
-      <p id="hello" data-i18n="home.hello"></p>
-      <button type="button" id="reopen" hidden data-i18n-title="tip.reopen" data-i18n="home.message"></button>
+      <div class="cover-wrap" id="cover-wrap" hidden><img class="cover" id="cover" alt=""></div>
+      <div class="intro">
+        <div class="ornament" aria-hidden="true"></div>
+        <div class="date" id="date"></div>
+        <div class="location" id="location"></div>
+        <div class="countdown" id="countdown"></div>
+        <p class="muted" id="deadline"></p>
+        <p id="hello" data-i18n="home.hello"></p>
+        <button type="button" id="reopen" hidden data-i18n-title="tip.reopen" data-i18n="home.message"></button>
+      </div>
     </div>
     <div class="tiles" id="tiles"></div>
   </main>
@@ -25,7 +27,7 @@
   <dialog class="sheet" id="message">
     <button type="button" class="close" id="msg-close" data-i18n-title="tip.close">&times;</button>
     <h2 id="msg-title"></h2>
-    <img class="sprig-small" src="/img/sprig.svg" alt="">
+    <div class="ornament" aria-hidden="true"></div>
     <div id="msg-body"></div>
     <div class="actions"><button type="button" id="msg-continue" data-i18n="home.continue"></button></div>
   </dialog>
@@ -43,7 +45,7 @@
     if (site.rsvpDeadline) $("deadline").textContent = `${t("rsvp.deadline")} ${formatDate(site.rsvpDeadline)}`;
     if (site.coverPhoto) {
       $("cover").src = `/api/photos/${site.coverPhoto}`;
-      $("cover").onload = () => { $("cover").hidden = false; };
+      $("cover").onload = () => { $("cover-wrap").hidden = false; document.querySelector(".home-hero").classList.add("has-cover"); };
     }
 
     const { pages } = await get("/api/nav");

@@ -24,6 +24,8 @@ test("validateSite", () => {
   rejects(() => validateSite({ rsvpDeadline: "soon" }), /RSVP deadline/);
   rejects(() => validateSite({ date: "12/06/2027" }), /Date/);
   rejects(() => validateSite({ theme: "neon" }), /Theme/);
+  rejects(() => validateSite({ palette: "neon" }), /palette/);
+  assert.equal(validateSite({ theme: "fiesta", font: "lora" }).font, "lora");
 });
 
 test("validatePage", () => {

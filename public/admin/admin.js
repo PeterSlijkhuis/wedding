@@ -1,16 +1,15 @@
 import { init, get, post, upload, t, el, logout, formatDate, pageHref, LANGUAGES } from "/js/app.js";
+import { TEMPLATES, PALETTES, FONTS, LAYOUTS, ARTS, MOODS, resolveDesign, applyDesign } from "/js/designs.js";
 
 const $ = (id) => document.getElementById(id);
+let currentForm = null; // id of the form shown in the editor, or null
 const PAGE_SLUGS = ["welcome", "story", "schedule", "travel", "faq", "gifts"]; // keep in sync with src/validate.js
-const THEMES = { // name and swatches; keep in sync with public/css/site.css
-  sage: ["Sage", ["#6b7355", "#ffffff", "#dfe1d3"]],
-  classic: ["Classic", ["#9c6b4e", "#fbf8f4", "#e6ddd3"]],
-  modern: ["Modern", ["#2f6b57", "#ffffff", "#dfe4e1"]],
-  garden: ["Garden", ["#5f8a43", "#f3f7ef", "#d5e0c9"]],
-};
 const fmt = (text, vars) => text.replace(/\{(\w+)\}/g, (_, key) => vars[key]);
 
 await init();
+// The admin keeps its own neutral look; the couple's design only shows in the preview.
+document.documentElement.removeAttribute("style");
+for (const key of ["theme", "layout", "art", "tone"]) delete document.documentElement.dataset[key];
 let site = await get("/api/admin/site");
 $("logout").onclick = logout;
 $("host").textContent = location.host;
@@ -29,6 +28,12 @@ function setPreview(url) {
   if (![...previewSelect.options].some((o) => o.value === url)) previewSelect.append(el("option", { value: url }, url));
   previewSelect.value = url;
   if (frame.getAttribute("src") !== url) frame.src = url;
+}
+
+// Unsaved design choices are shown in the preview right away, and again after it navigates.
+frame.addEventListener("load", () => { if (currentForm === "design") previewDesign(); });
+function previewDesign() {
+  try { applyDesign(frame.contentDocument, designDraft()); } catch (err) { console.warn("Preview not ready", err); }
 }
 
 function reloadPreview() {
@@ -67,19 +72,57 @@ $("panel-body").addEventListener("change", markDirty);
 async function saveSite(changes) {
   await post("/api/admin/site", { ...site, ...changes });
   site = await get("/api/admin/site");
-  document.documentElement.dataset.theme = site.theme;
-  if (site.accent) document.documentElement.style.setProperty("--accent", site.accent);
-  else document.documentElement.style.removeProperty("--accent");
 }
 
-/** The accent color of the theme currently selected, ignoring any custom color. */
-function themeDefault() {
-  const custom = document.documentElement.style.getPropertyValue("--accent");
-  document.documentElement.style.removeProperty("--accent");
-  const value = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
-  if (custom) document.documentElement.style.setProperty("--accent", custom);
-  return value;
+// ---------- Design: templates, then color, font, layout and art ----------
+const checked = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value;
+let mood = "all";
+
+function designDraft() {
+  return { ...site, theme: checked("template") ?? site.theme, palette: checked("palette"), font: checked("font"),
+    layout: checked("layout"), art: checked("art"), accent: $("accent").dataset.custom ? $("accent").value : "" };
 }
+
+/** One choice card: a hidden radio plus whatever shows it. */
+const choice = (name, value, selected, title, ...content) =>
+  el("label", { class: "choice", title }, el("input", { type: "radio", name, value, checked: value === selected }), ...content);
+
+/** Small picture of a template: its colors, fonts and art, drawn with the same variables as the site. */
+function miniSite(design) {
+  const p = PALETTES[design.palette];
+  const f = FONTS[design.font];
+  return el("div", {
+    class: "mini", "data-layout": design.layout, "data-art": design.art,
+    style: `--bg:${p.bg};--text:${p.text};--muted:${p.muted};--accent:${p.accent};--accent-2:${p.accent2};--on-accent:${p.onAccent};--font-display:${f.display.replaceAll('"', "'")};--font:${f.body.replaceAll('"', "'")}`,
+  }, el("span", { class: "art" }), el("b", {}, site.names || "Ana & Marko"), el("small", {}, "12 · 06 · 2027"), el("i", {}));
+}
+
+function renderTemplates(selected = checked("template") ?? site.theme) {
+  $("moods").replaceChildren(...["all", ...MOODS].map((m) => el("button", {
+    type: "button", class: m === mood ? "chip on" : "chip", "aria-pressed": String(m === mood),
+    onclick: () => { mood = m; renderTemplates(); },
+  }, t(`admin.mood.${m}`))));
+  $("templates").replaceChildren(...Object.entries(TEMPLATES).filter(([, tpl]) => mood === "all" || tpl.mood === mood)
+    .map(([id, tpl]) => choice("template", id, selected, tpl.name, miniSite(tpl), el("span", {}, tpl.name))));
+}
+
+function renderParts(design) {
+  $("palettes").replaceChildren(...Object.entries(PALETTES).map(([id, p]) => choice("palette", id, design.palette, p.name,
+    el("span", { class: "dots" }, ...[p.bg, p.accent, p.accent2, p.text].map((c) => el("i", { style: `background:${c}` }))), el("span", {}, p.name))));
+  $("fonts").replaceChildren(...Object.entries(FONTS).map(([id, f]) => choice("font", id, design.font, f.name,
+    el("span", { class: "sample", style: `font-family:${f.display.replaceAll('"', "'")}` }, "Aa"), el("span", {}, f.name))));
+  $("layouts").replaceChildren(...Object.entries(LAYOUTS).map(([id, name]) => choice("layout", id, design.layout, name,
+    el("span", { class: `schema ${id}` }, el("i", {}), el("i", {})), el("span", {}, name))));
+  $("arts").replaceChildren(...Object.entries(ARTS).map(([id, name]) => choice("art", id, design.art, name, el("span", {}, name))));
+}
+
+$("design").addEventListener("change", (e) => {
+  if (e.target.name === "template") renderParts(TEMPLATES[e.target.value]); // a template resets the four parts
+  if (e.target.name === "template" || e.target.name === "palette") {
+    if (!$("accent").dataset.custom) $("accent").value = PALETTES[checked("palette")].accent;
+  }
+  previewDesign();
+});
 
 async function renderCoverPicker() {
   const { photos } = await get("/api/photos");
@@ -90,15 +133,6 @@ async function renderCoverPicker() {
       el("img", { src: `/api/photos/${id}`, loading: "lazy", alt: "" }))));
 }
 
-function renderThemes() {
-  $("themes").replaceChildren(...Object.entries(THEMES).map(([key, [name, dots]]) => el("label", {},
-    el("input", { type: "radio", name: "theme", value: key, checked: site.theme === key }),
-    el("div", { class: "dots" }, ...dots.map((c) => el("i", { style: `background:${c}` }))), name)));
-  $("themes").onchange = () => {
-    document.documentElement.dataset.theme = document.querySelector('input[name="theme"]:checked').value;
-    if (!$("accent").dataset.custom) $("accent").value = themeDefault();
-  };
-}
 
 const FORMS = {
   details: {
@@ -119,17 +153,18 @@ const FORMS = {
   },
   design: {
     async fill() {
-      document.documentElement.dataset.theme = site.theme;
-      renderThemes();
+      const design = resolveDesign(site);
+      renderTemplates(site.theme);
+      renderParts(design);
       $("accent").dataset.custom = site.accent ? "1" : "";
-      $("accent").value = site.accent || themeDefault();
+      $("accent").value = site.accent || PALETTES[design.palette].accent;
       await renderCoverPicker();
+      previewDesign();
     },
-    save: () => saveSite({
-      theme: document.querySelector('input[name="theme"]:checked').value,
-      accent: $("accent").dataset.custom ? $("accent").value : "",
-      coverPhoto: Number(document.querySelector('input[name="cover"]:checked')?.value ?? 0),
-    }),
+    save: () => {
+      const { theme, palette, font, layout, art, accent } = designDraft();
+      return saveSite({ theme, palette, font, layout, art, accent, coverPhoto: Number(checked("cover") ?? 0) });
+    },
   },
   page: {
     async fill() {
@@ -155,14 +190,13 @@ const FORMS = {
   },
 };
 
-$("accent").oninput = () => { $("accent").dataset.custom = "1"; };
-$("accent-reset").onclick = () => { $("accent").dataset.custom = ""; $("accent").value = themeDefault(); markDirty(); };
+$("accent").oninput = () => { $("accent").dataset.custom = "1"; previewDesign(); };
+$("accent-reset").onclick = () => { $("accent").dataset.custom = ""; $("accent").value = PALETTES[checked("palette")].accent; markDirty(); previewDesign(); };
 
 $("slug").replaceChildren(...PAGE_SLUGS.map((s) => el("option", { value: s }, t(`page.${s}`))));
 $("lang").replaceChildren(...Object.entries(LANGUAGES).map(([code, name]) => el("option", { value: code }, name)));
 $("lang").value = document.documentElement.lang;
 
-let currentForm = null;
 for (const id of Object.keys(FORMS)) {
   $(id).onsubmit = async (e) => {
     e.preventDefault();
@@ -177,7 +211,7 @@ for (const id of Object.keys(FORMS)) {
   };
 }
 $("slug").onchange = $("lang").onchange = async () => { await FORMS.page.fill(); markSaved(); setPreview(pageHref($("slug").value)); };
-$("cancel").onclick = async () => { await FORMS[currentForm].fill(); markSaved(); };
+$("cancel").onclick = async () => { await FORMS[currentForm].fill(); markSaved(); reloadPreview(); };
 $("save").onclick = () => $(currentForm).requestSubmit();
 
 // ---------- Dashboard ----------
@@ -197,7 +231,7 @@ async function renderDashboard() {
   const [status, nav] = await Promise.all([get("/api/admin/status"), get("/api/nav")]);
   const statusText = {
     pages: fmt(t("admin.s.pages"), { n: nav.pages.filter((s) => s !== "photos").length }),
-    design: THEMES[site.theme]?.[0] ?? site.theme,
+    design: TEMPLATES[site.theme]?.name ?? site.theme,
     details: site.date ? formatDate(site.date) : t("admin.s.noDate"),
     guests: fmt(t("admin.s.guests"), { n: status.guests, p: status.parties }),
     rsvp: fmt(t("admin.s.rsvp"), { n: status.replied, p: status.parties }),
@@ -342,6 +376,7 @@ async function show() {
   $("savebar").hidden = !currentForm;
   if (config.title) $("section-title").textContent = t(config.title);
   for (const section of document.querySelectorAll("[data-view]")) section.hidden = section.dataset.view !== view;
+  $("panel-body").scrollTop = 0;
   setPreview(typeof config.preview === "function" ? config.preview() : config.preview);
   if (view === "dashboard") await renderDashboard();
   if (config.load) await config.load();

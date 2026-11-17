@@ -6,7 +6,7 @@ const COOKIE = "session";
 const SESSION_SECONDS = 30 * 24 * 3600;
 // Reachable without a password: the landing page, the login page and their assets.
 const PUBLIC_PATHS = ["/", "/index.html", "/login", "/login.html", "/favicon.ico"];
-const PUBLIC_PREFIXES = ["/css/", "/js/", "/i18n/", "/img/"];
+const PUBLIC_PREFIXES = ["/css/", "/js/", "/i18n/", "/img/", "/fonts/"];
 
 export default {
   async fetch(request, env) {

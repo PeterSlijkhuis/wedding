@@ -1,7 +1,8 @@
 // Pure input validation, no I/O. Every function throws HttpError(400) on bad input.
 import { HttpError } from "./util.js";
+import { TEMPLATES, PALETTES, FONTS, LAYOUTS, ARTS } from "../public/js/designs.js";
 
-export const THEMES = ["sage", "classic", "modern", "garden"];
+export const THEMES = Object.keys(TEMPLATES);
 export const PAGE_SLUGS = ["welcome", "story", "schedule", "travel", "faq", "gifts"]; // "welcome" is shown on the home page, not in the menu
 export const LANGS = ["en", "es", "nl", "mk"];
 
@@ -34,6 +35,13 @@ export function validateSite(input) {
   }
   const theme = text(input.theme, 20, "Theme") || "sage";
   if (!THEMES.includes(theme)) throw new HttpError(400, `Theme must be one of: ${THEMES.join(", ")}`);
+  // Each design part is optional: empty means "use the template's choice".
+  const part = (key, list) => {
+    const value = text(input[key], 20, key);
+    if (value && !(value in list)) throw new HttpError(400, `${key} must be one of: ${Object.keys(list).join(", ")}`);
+    return value;
+  };
+  const design = { palette: part("palette", PALETTES), font: part("font", FONTS), layout: part("layout", LAYOUTS), art: part("art", ARTS) };
   const rawMeals = Array.isArray(input.meals) ? input.meals : String(input.meals ?? "").split(",");
   const meals = rawMeals.map((m) => text(m, 60, "Meal option")).filter(Boolean);
   if (meals.length > 10) throw new HttpError(400, "At most 10 meal options");
@@ -41,7 +49,7 @@ export function validateSite(input) {
   if (!Number.isInteger(coverPhoto) || coverPhoto < 0) throw new HttpError(400, "Cover photo must be a photo id or 0");
   return {
     names: text(input.names, 100, "Names"), date, location: text(input.location, 200, "Location"), rsvpDeadline,
-    countdown: input.countdown === true, tagline, theme, accent, coverPhoto, meals,
+    countdown: input.countdown === true, tagline, theme, ...design, accent, coverPhoto, meals,
   };
 }
 
