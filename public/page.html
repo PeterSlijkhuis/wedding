@@ -14,8 +14,8 @@
   </main>
   <script type="module">
     import { init, get, t, paragraphs, guestHeader } from "/js/app.js";
-    await init();
-    await guestHeader();
+    const site = await init();
+    await guestHeader(site);
     const slug = new URLSearchParams(location.search).get("slug");
     const lang = document.documentElement.lang;
     try {

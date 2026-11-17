@@ -2,7 +2,7 @@
 import { HttpError, json, body, getSetting, setSetting } from "./util.js";
 import { validateSite, validatePage, validateRsvp, validatePhoto, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
 
-const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", tagline: {}, theme: "classic", meals: [] };
+const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", location: "", countdown: false, tagline: {}, theme: "sage", accent: "", coverPhoto: 0, meals: [] };
 
 async function loadSite(env) {
   const raw = await getSetting(env, "site");
@@ -41,12 +41,25 @@ async function loadParties(env, ids = null) {
 const routes = {
   // Public: only what the landing page may show.
   "GET /api/site": async ({ env }) => {
-    const { names, date, rsvpDeadline, tagline, theme } = await loadSite(env);
-    return json({ names, date, rsvpDeadline, tagline, theme });
+    const { names, date, location, countdown, rsvpDeadline, tagline, theme, accent, coverPhoto } = await loadSite(env);
+    return json({ names, date, location, countdown, rsvpDeadline, tagline, theme, accent, coverPhoto });
   },
   "GET /api/admin/site": async ({ env, role }) => {
     needAdmin(role);
     return json(await loadSite(env));
+  },
+  // Numbers for the admin dashboard tiles.
+  "GET /api/admin/status": async ({ env, role }) => {
+    needAdmin(role);
+    const g = await env.DB.prepare(
+      "SELECT COUNT(*) AS total, COALESCE(SUM(attending = 1), 0) AS yes, COALESCE(SUM(attending = 0), 0) AS no FROM guests").first();
+    const p = await env.DB.prepare(
+      "SELECT COUNT(*) AS total, COALESCE(SUM(responded_at IS NOT NULL), 0) AS replied FROM parties").first();
+    const photos = await env.DB.prepare("SELECT COUNT(*) AS n FROM photos").first();
+    return json({
+      guestPasswordSet: !!(await getSetting(env, "guest_password")),
+      guests: g.total, attending: g.yes, declined: g.no, parties: p.total, replied: p.replied, photos: photos.n,
+    });
   },
   "POST /api/admin/site": async ({ request, env, role }) => {
     needAdmin(role);
@@ -60,7 +73,7 @@ const routes = {
     const { results } = await env.DB.prepare("SELECT DISTINCT slug FROM pages WHERE body != ''").all();
     const have = new Set(results.map((r) => r.slug));
     const hasPhotos = await env.DB.prepare("SELECT 1 AS x FROM photos LIMIT 1").first();
-    return json({ pages: [...PAGE_SLUGS.filter((s) => s !== "welcome" && have.has(s)), ...(hasPhotos ? ["photos"] : [])] });
+    return json({ pages: [...PAGE_SLUGS.filter((s) => s !== "welcome" && have.has(s)), ...(hasPhotos ? ["photos"] : [])], role });
   },
   // Text in the requested language, falling back to English unless exact=1 (used by the editor).
   "GET /api/pages": async ({ env, role, url }) => {
@@ -68,6 +81,10 @@ const routes = {
     const slug = url.searchParams.get("slug");
     const lang = url.searchParams.get("lang") || "en";
     if (!PAGE_SLUGS.includes(slug) || !LANGS.includes(lang)) throw new HttpError(400, "Unknown page or language");
+    if (url.searchParams.get("all") === "1") { // every language that has text (home page message to the guests)
+      const { results: all } = await env.DB.prepare("SELECT lang, title, body FROM pages WHERE slug = ? AND body != ''").bind(slug).all();
+      return json({ pages: LANGS.map((l) => all.find((r) => r.lang === l)).filter(Boolean) });
+    }
     const { results } = await env.DB.prepare("SELECT lang, title, body FROM pages WHERE slug = ? AND lang IN (?, 'en')")
       .bind(slug, lang).all();
     const row = results.find((r) => r.lang === lang) ?? (url.searchParams.get("exact") === "1" ? null : results[0]);

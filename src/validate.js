@@ -1,7 +1,7 @@
 // Pure input validation, no I/O. Every function throws HttpError(400) on bad input.
 import { HttpError } from "./util.js";
 
-export const THEMES = ["classic", "modern", "garden"];
+export const THEMES = ["sage", "classic", "modern", "garden"];
 export const PAGE_SLUGS = ["welcome", "story", "schedule", "travel", "faq", "gifts"]; // "welcome" is shown on the home page, not in the menu
 export const LANGS = ["en", "es", "nl", "mk"];
 
@@ -23,6 +23,8 @@ function isoDate(value, field) {
 export function validateSite(input) {
   const date = isoDate(input.date, "Date");
   const rsvpDeadline = isoDate(input.rsvpDeadline, "RSVP deadline");
+  const accent = text(input.accent, 7, "Accent color");
+  if (accent && !/^#[0-9a-fA-F]{6}$/.test(accent)) throw new HttpError(400, "Accent color must look like #6b7355");
   // Tagline is per language. A plain string (older saved data) counts as English.
   const rawTagline = typeof input.tagline === "string" ? { en: input.tagline } : input.tagline ?? {};
   const tagline = {};
@@ -30,12 +32,17 @@ export function validateSite(input) {
     const line = text(rawTagline[lang], 200, "Tagline");
     if (line) tagline[lang] = line;
   }
-  const theme = text(input.theme, 20, "Theme") || "classic";
+  const theme = text(input.theme, 20, "Theme") || "sage";
   if (!THEMES.includes(theme)) throw new HttpError(400, `Theme must be one of: ${THEMES.join(", ")}`);
   const rawMeals = Array.isArray(input.meals) ? input.meals : String(input.meals ?? "").split(",");
   const meals = rawMeals.map((m) => text(m, 60, "Meal option")).filter(Boolean);
   if (meals.length > 10) throw new HttpError(400, "At most 10 meal options");
-  return { names: text(input.names, 100, "Names"), date, rsvpDeadline, tagline, theme, meals };
+  const coverPhoto = Number(input.coverPhoto ?? 0);
+  if (!Number.isInteger(coverPhoto) || coverPhoto < 0) throw new HttpError(400, "Cover photo must be a photo id or 0");
+  return {
+    names: text(input.names, 100, "Names"), date, location: text(input.location, 200, "Location"), rsvpDeadline,
+    countdown: input.countdown === true, tagline, theme, accent, coverPhoto, meals,
+  };
 }
 
 export function validatePage(input) {

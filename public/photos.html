@@ -15,8 +15,8 @@
   </main>
   <script type="module">
     import { init, get, el, t, guestHeader } from "/js/app.js";
-    await init();
-    await guestHeader();
+    const site = await init();
+    await guestHeader(site);
     const viewer = document.getElementById("viewer");
     const big = document.getElementById("big");
     viewer.onclick = () => viewer.close();

@@ -23,7 +23,7 @@ export function el(tag, attrs = {}, ...children) {
     else if (name.startsWith("on")) node.addEventListener(name.slice(2), value);
     else node.setAttribute(name, value === true ? "" : value);
   }
-  node.append(...children);
+  node.append(...children.filter((c) => c !== null && c !== undefined && c !== false));
   return node;
 }
 
@@ -85,6 +85,7 @@ export async function init() {
   strings = await langRes.json();
   document.documentElement.lang = lang;
   document.documentElement.dataset.theme = site.theme;
+  if (site.accent) document.documentElement.style.setProperty("--accent", site.accent);
   document.title = site.names;
   translateDom();
   bindLangSelect();
@@ -102,16 +103,24 @@ export function paragraphs(text) {
   return text.split(/\n\s*\n/).map((p) => el("p", {}, p.trim())).filter((p) => p.textContent);
 }
 
-/** Menu for logged-in guests: home, every page that has text, RSVP. */
-export async function guestHeader() {
-  const { pages } = await get("/api/nav");
+/** Whole days from today until an ISO date, or null when the date is missing or past. */
+export function daysUntil(iso) {
+  if (!iso) return null;
+  const days = Math.ceil((new Date(`${iso}T00:00:00`) - Date.now()) / 86400000);
+  return days > 0 ? days : null;
+}
+
+/** Site header for logged-in guests: names, then every page that has text, then RSVP. */
+export async function guestHeader(site) {
+  const { pages, role } = await get("/api/nav");
   const here = location.pathname + location.search;
   const links = [["/home", t("nav.home")], ...pages.map((s) => [pageHref(s), t(`page.${s}`)]), ["/rsvp", t("nav.rsvp")]];
   document.querySelector("header").replaceChildren(
-    el("nav", {}, ...links.map(([href, label]) => el("a", { href, "aria-current": href === here ? "page" : null }, label))),
     el("span", { class: "tools" },
+      role === "admin" ? el("a", { href: "/admin/" }, t("nav.admin")) : null,
       el("select", { class: "lang", "aria-label": "Language" }),
       el("button", { class: "link", onclick: logout }, t("nav.logout"))),
-  );
+    el("a", { class: "site-title", href: "/home" }, site.names),
+    el("nav", {}, ...links.map(([href, label]) => el("a", { href, "aria-current": href === here ? "page" : null }, label))));
   bindLangSelect();
 }

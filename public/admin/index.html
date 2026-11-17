@@ -5,84 +5,147 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Wedding admin</title>
   <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
-<body>
-  <header>
-    <span><a href="/home" data-i18n="nav.site"></a> · <button class="link" id="logout" data-i18n="nav.logout"></button></span>
-    <select class="lang" aria-label="Language"></select>
-  </header>
-  <main>
-    <h1 data-i18n="admin.title"></h1>
+<body class="admin" data-mode="dashboard">
+  <aside id="panel">
+    <div id="editor-top" hidden>
+      <button type="button" class="icon-btn" id="menu-open" aria-label="Menu">&#9776;</button>
+      <strong id="section-title"></strong>
+    </div>
 
-    <form class="card" id="site">
-      <h2 data-i18n="admin.site"></h2>
-      <label for="names" data-i18n="admin.names"></label>
-      <input id="names" maxlength="100">
-      <div class="row">
-        <div><label for="date" data-i18n="admin.date"></label><input id="date" type="date"></div>
-        <div>
-          <label for="theme" data-i18n="admin.theme"></label>
-          <select id="theme">
-            <option value="classic">Classic</option>
-            <option value="modern">Modern</option>
-            <option value="garden">Garden</option>
-          </select>
+    <nav id="drawer" hidden aria-label="Menu">
+      <div class="drawer-head">
+        <a href="#dashboard" class="drawer-home" id="drawer-home"><span aria-hidden="true">&#8962;</span> <span data-i18n="admin.dashboard"></span></a>
+        <button type="button" class="icon-btn" id="menu-close" aria-label="Close">&times;</button>
+      </div>
+      <h3 data-i18n="admin.group.website"></h3>
+      <a href="#details" data-i18n="admin.tile.details"></a>
+      <a href="#design" data-i18n="admin.tile.design"></a>
+      <a href="#photos" data-i18n="admin.tile.photos"></a>
+      <a href="#pages" data-i18n="admin.tile.website"></a>
+      <h3 data-i18n="admin.group.planning"></h3>
+      <a href="#guests" data-i18n="admin.tile.guests"></a>
+      <a href="#rsvp" data-i18n="admin.tile.rsvp"></a>
+      <a class="soon" aria-disabled="true"><span data-i18n="admin.tile.tables"></span> <em data-i18n="admin.soon"></em></a>
+      <a class="soon" aria-disabled="true"><span data-i18n="admin.tile.drinks"></span> <em data-i18n="admin.soon"></em></a>
+      <h3 data-i18n="admin.group.settings"></h3>
+      <a href="#privacy" data-i18n="admin.tile.privacy"></a>
+      <div class="drawer-foot"><b id="drawer-names"></b><small id="drawer-date"></small></div>
+    </nav>
+
+    <div id="panel-body">
+      <section data-view="dashboard">
+        <h1 id="brand"></h1>
+        <div class="chips" id="chips"></div>
+        <div class="tile-grid" id="tiles"></div>
+      </section>
+
+      <form data-view="details" id="details">
+        <h2 data-i18n="admin.tile.details"></h2>
+        <label for="names" data-i18n="admin.names"></label>
+        <input id="names" maxlength="100">
+        <div class="row">
+          <div><label for="date" data-i18n="admin.date"></label><input id="date" type="date"></div>
+          <div><label for="deadline" data-i18n="admin.deadline"></label><input id="deadline" type="date"></div>
         </div>
-      </div>
-      <label for="deadline" data-i18n="admin.deadline"></label>
-      <input id="deadline" type="date">
-      <label data-i18n="admin.tagline"></label>
-      <input id="tagline-en" maxlength="200" placeholder="English">
-      <input id="tagline-es" maxlength="200" placeholder="Español">
-      <input id="tagline-nl" maxlength="200" placeholder="Nederlands">
-      <input id="tagline-mk" maxlength="200" placeholder="Македонски">
-      <label for="meals" data-i18n="admin.meals"></label>
-      <input id="meals">
-      <p class="status" role="status"></p>
-      <button type="submit" data-i18n="admin.save"></button>
-    </form>
-
-    <form class="card" id="guest-password">
-      <h2 data-i18n="admin.guestPasswordTitle"></h2>
-      <label for="password" data-i18n="admin.guestPassword"></label>
-      <input id="password" type="text" minlength="6" required autocomplete="off">
-      <p class="status" role="status"></p>
-      <button type="submit" data-i18n="admin.save"></button>
-    </form>
-
-    <form class="card" id="page">
-      <h2 data-i18n="admin.pages"></h2>
-      <div class="row">
-        <div><label for="slug" data-i18n="admin.page"></label><select id="slug"></select></div>
-        <div><label for="lang" data-i18n="admin.language"></label><select id="lang"></select></div>
-      </div>
-      <label for="title" style="margin-top:1rem" data-i18n="admin.pageTitle"></label>
-      <input id="title" maxlength="100">
-      <label for="body" data-i18n="admin.pageBody"></label>
-      <textarea id="body" rows="10" maxlength="20000"></textarea>
-      <p class="status" role="status"></p>
-      <button type="submit" data-i18n="admin.save"></button>
-    </form>
-
-    <section class="card">
-      <h2 data-i18n="admin.photos"></h2>
-      <label for="photo-files" data-i18n="admin.photoAdd"></label>
-      <input id="photo-files" type="file" accept="image/*" multiple>
-      <p class="status" id="photo-status" role="status"></p>
-      <div class="gallery" id="photos"></div>
-    </section>
-
-    <section class="card">
-      <h2 data-i18n="admin.parties"></h2>
-      <div id="parties"></div>
-      <form id="add-party" style="margin-top:1rem">
-        <label for="party-names" data-i18n="admin.partyNames"></label>
-        <textarea id="party-names" rows="3" required></textarea>
-        <p class="status" role="status"></p>
-        <button type="submit" data-i18n="admin.add"></button>
+        <label for="location" data-i18n="admin.location"></label>
+        <input id="location" maxlength="200">
+        <label class="check"><input id="countdown" type="checkbox"> <span data-i18n="admin.countdown"></span></label>
+        <label for="meals" data-i18n="admin.meals"></label>
+        <input id="meals">
+        <label data-i18n="admin.tagline"></label>
+        <input id="tagline-en" maxlength="200" placeholder="English">
+        <input id="tagline-es" maxlength="200" placeholder="Español">
+        <input id="tagline-nl" maxlength="200" placeholder="Nederlands">
+        <input id="tagline-mk" maxlength="200" placeholder="Македонски">
       </form>
-    </section>
-  </main>
+
+      <form data-view="design" id="design">
+        <h2 data-i18n="admin.tile.design"></h2>
+        <label data-i18n="admin.theme"></label>
+        <div class="themes" id="themes"></div>
+        <label for="accent" data-i18n="admin.accent"></label>
+        <div class="row-inline">
+          <input id="accent" type="color">
+          <button type="button" class="link" id="accent-reset" data-i18n="admin.accentReset"></button>
+        </div>
+        <label style="margin-top:1.2rem" data-i18n="admin.cover"></label>
+        <div class="gallery" id="cover-picker"></div>
+      </form>
+
+      <form data-view="pages" id="page">
+        <h2 data-i18n="admin.tile.website"></h2>
+        <div class="row">
+          <div><label for="slug" data-i18n="admin.page"></label><select id="slug"></select></div>
+          <div><label for="lang" data-i18n="admin.language"></label><select id="lang"></select></div>
+        </div>
+        <label for="title" style="margin-top:1rem" data-i18n="admin.pageTitle"></label>
+        <input id="title" maxlength="100">
+        <label for="body" data-i18n="admin.pageBody"></label>
+        <textarea id="body" rows="12" maxlength="20000"></textarea>
+      </form>
+
+      <section data-view="photos">
+        <h2 data-i18n="admin.tile.photos"></h2>
+        <label for="photo-files" data-i18n="admin.photoAdd"></label>
+        <input id="photo-files" type="file" accept="image/*" multiple>
+        <p class="status" id="photo-status" role="status"></p>
+        <div class="gallery" id="photos"></div>
+      </section>
+
+      <section data-view="guests">
+        <h2 data-i18n="admin.tile.guests"></h2>
+        <div id="parties"></div>
+        <form id="add-party" style="margin-top:1rem">
+          <label for="party-names" data-i18n="admin.partyNames"></label>
+          <textarea id="party-names" rows="3" required></textarea>
+          <p class="status" role="status"></p>
+          <button type="submit" data-i18n="admin.add"></button>
+        </form>
+      </section>
+
+      <section data-view="rsvp">
+        <h2 data-i18n="admin.tile.rsvp"></h2>
+        <div class="stats" id="stats"></div>
+        <div id="answers"></div>
+      </section>
+
+      <form data-view="privacy" id="privacy">
+        <h2 data-i18n="admin.tile.privacy"></h2>
+        <p data-i18n="admin.privacyText"></p>
+        <p class="muted" id="pw-state"></p>
+        <label for="password" data-i18n="admin.guestPassword"></label>
+        <input id="password" type="text" minlength="6" autocomplete="off">
+      </form>
+    </div>
+
+    <footer id="savebar" hidden>
+      <span id="savestate" role="status"></span>
+      <button type="button" class="ghost" id="cancel" data-i18n="admin.cancel"></button>
+      <button type="submit" id="save" data-i18n="admin.save"></button>
+    </footer>
+  </aside>
+
+  <section id="stage">
+    <div class="stage-bar">
+      <select id="preview-page" aria-label="Preview"></select>
+      <span class="devices">
+        <button type="button" id="dev-desktop" aria-pressed="true" aria-label="Desktop">&#128421;</button>
+        <button type="button" id="dev-mobile" aria-pressed="false" aria-label="Mobile">&#128241;</button>
+      </span>
+      <span class="published">
+        <i class="dot"></i><span data-i18n="admin.published"></span> <b id="host"></b>
+        <button type="button" class="link" id="copy" data-i18n="admin.share"></button>
+        <a id="open-site" href="/home" target="_blank" rel="noopener" data-i18n="admin.openSite"></a>
+      </span>
+      <span class="who">
+        <select class="lang" aria-label="Language"></select>
+        <button type="button" class="link" id="logout" data-i18n="nav.logout"></button>
+      </span>
+    </div>
+    <div id="device"><iframe id="preview" title="Preview"></iframe></div>
+  </section>
   <script type="module" src="/admin/admin.js"></script>
 </body>
 </html>

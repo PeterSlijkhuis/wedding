@@ -12,7 +12,12 @@ test("nameKey ignores case, accents and extra spaces", () => {
 test("validateSite", () => {
   const ok = validateSite({ names: "A & B", date: "2027-06-12", theme: "garden", meals: " Beef, Fish ,," });
   assert.deepEqual(ok.meals, ["Beef", "Fish"]);
-  assert.equal(validateSite({}).theme, "classic");
+  assert.equal(validateSite({}).theme, "sage");
+  assert.equal(validateSite({ accent: "#6b7355" }).accent, "#6b7355");
+  assert.equal(validateSite({ countdown: "yes" }).countdown, false); // only a real boolean turns it on
+  assert.equal(validateSite({ countdown: true, location: " Skopje ", coverPhoto: "3" }).coverPhoto, 3);
+  rejects(() => validateSite({ coverPhoto: -1 }), /Cover photo/);
+  rejects(() => validateSite({ accent: "green" }), /Accent/);
   assert.deepEqual(validateSite({ tagline: { en: "Hi", es: " Hola ", nl: "", fr: "x" } }).tagline, { en: "Hi", es: "Hola" });
   assert.deepEqual(validateSite({ tagline: "Old text" }).tagline, { en: "Old text" }); // saved before taglines were per language
   assert.equal(validateSite({ rsvpDeadline: "2026-12-20" }).rsvpDeadline, "2026-12-20");
