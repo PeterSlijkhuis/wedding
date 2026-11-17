@@ -9,6 +9,8 @@
     // Every request passes the password check in the worker before a static file is served.
     "run_worker_first": true
   },
+  // Photo files live in KV (free, no card needed); the photos table in D1 is just the ordered list of ids.
+  "kv_namespaces": [{ "binding": "PHOTOS" }],
   "d1_databases": [
     { "binding": "DB", "database_name": "wedding", "migrations_dir": "migrations" }
   ]

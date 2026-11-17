@@ -58,5 +58,11 @@
   "admin.confirmDelete": "Да се избрише оваа група?",
   "admin.replied": "Одговорено",
   "admin.pending": "Нема одговор",
-  "admin.noGuests": "Сè уште нема гости."
+  "admin.noGuests": "Сè уште нема гости.",
+  "page.photos": "Фотографии",
+  "admin.photos": "Фотографии",
+  "admin.photoAdd": "Додајте фотографии. Прво се намалуваат на вашиот уред и ги гледаат само луѓе со лозинката за гости.",
+  "admin.uploading": "Се качува",
+  "admin.photoFailed": "Не успеа качувањето:",
+  "admin.noPhotos": "Сè уште нема фотографии."
 }

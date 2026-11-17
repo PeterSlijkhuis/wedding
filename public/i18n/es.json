@@ -58,5 +58,11 @@
   "admin.confirmDelete": "¿Eliminar este grupo?",
   "admin.replied": "Respondido",
   "admin.pending": "Sin respuesta",
-  "admin.noGuests": "Aún no hay invitados."
+  "admin.noGuests": "Aún no hay invitados.",
+  "page.photos": "Fotos",
+  "admin.photos": "Fotos",
+  "admin.photoAdd": "Añade fotos. Se reducen en tu dispositivo antes de subirlas y solo las ven quienes tengan la contraseña de invitados.",
+  "admin.uploading": "Subiendo",
+  "admin.photoFailed": "No se pudo subir:",
+  "admin.noPhotos": "Aún no hay fotos."
 }

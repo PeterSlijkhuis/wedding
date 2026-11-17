@@ -48,6 +48,11 @@ export const get = (path) => request(path);
 export const post = (path, body = {}) =>
   request(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 
+/** POST a JPEG file body (photo upload). */
+export const upload = (path, blob) => request(path, { method: "POST", headers: { "content-type": "image/jpeg" }, body: blob });
+
+export const pageHref = (slug) => (slug === "photos" ? "/photos" : `/page?slug=${slug}`);
+
 export async function logout() {
   await post("/api/logout");
   location.href = "/login";
@@ -101,7 +106,7 @@ export function paragraphs(text) {
 export async function guestHeader() {
   const { pages } = await get("/api/nav");
   const here = location.pathname + location.search;
-  const links = [["/home", t("nav.home")], ...pages.map((s) => [`/page?slug=${s}`, t(`page.${s}`)]), ["/rsvp", t("nav.rsvp")]];
+  const links = [["/home", t("nav.home")], ...pages.map((s) => [pageHref(s), t(`page.${s}`)]), ["/rsvp", t("nav.rsvp")]];
   document.querySelector("header").replaceChildren(
     el("nav", {}, ...links.map(([href, label]) => el("a", { href, "aria-current": href === here ? "page" : null }, label))),
     el("span", { class: "tools" },

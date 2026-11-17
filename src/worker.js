@@ -38,7 +38,8 @@ async function route(request, env) {
 }
 
 async function api(request, env, url) {
-  if (request.method === "POST" && !request.headers.get("content-type")?.startsWith("application/json")) {
+  const type = request.headers.get("content-type") || "";
+  if (request.method === "POST" && !type.startsWith("application/json") && type !== "image/jpeg") {
     return json({ error: "Expected application/json" }, 415); // Also blocks cross-site form posts (CSRF).
   }
   const key = `${request.method} ${url.pathname}`;

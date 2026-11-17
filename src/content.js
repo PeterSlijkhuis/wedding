@@ -1,6 +1,6 @@
 // API handlers for site details, text pages, RSVP and the guest list.
 import { HttpError, json, body, getSetting, setSetting } from "./util.js";
-import { validateSite, validatePage, validateRsvp, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
+import { validateSite, validatePage, validateRsvp, validatePhoto, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
 
 const DEFAULT_SITE = { names: "Our Wedding", date: "", tagline: "", theme: "classic", meals: [] };
 
@@ -57,7 +57,8 @@ const routes = {
     needGuest(role);
     const { results } = await env.DB.prepare("SELECT DISTINCT slug FROM pages WHERE body != ''").all();
     const have = new Set(results.map((r) => r.slug));
-    return json({ pages: PAGE_SLUGS.filter((s) => have.has(s)) });
+    const hasPhotos = await env.DB.prepare("SELECT 1 AS x FROM photos LIMIT 1").first();
+    return json({ pages: [...PAGE_SLUGS.filter((s) => have.has(s)), ...(hasPhotos ? ["photos"] : [])] });
   },
   // Text in the requested language, falling back to English unless exact=1 (used by the editor).
   "GET /api/pages": async ({ env, role, url }) => {
@@ -80,6 +81,33 @@ const routes = {
         "INSERT INTO pages (slug, lang, title, body) VALUES (?, ?, ?, ?) ON CONFLICT(slug, lang) DO UPDATE SET title = excluded.title, body = excluded.body",
       ).bind(slug, lang, title, text).run();
     }
+    return json({ ok: true });
+  },
+
+  // Photos: bytes in KV, ordered ids in D1. Only logged-in users can fetch them.
+  "GET /api/photos": async ({ env, role }) => {
+    needGuest(role);
+    const { results } = await env.DB.prepare("SELECT id FROM photos ORDER BY id DESC").all();
+    return json({ photos: results.map((r) => r.id) });
+  },
+  "POST /api/admin/photos": async ({ request, env, role }) => {
+    needAdmin(role);
+    const data = await request.arrayBuffer();
+    validatePhoto(data);
+    const { meta } = await env.DB.prepare("INSERT INTO photos DEFAULT VALUES").run();
+    try {
+      await env.PHOTOS.put(`photo:${meta.last_row_id}`, data);
+    } catch (err) {
+      await env.DB.prepare("DELETE FROM photos WHERE id = ?").bind(meta.last_row_id).run(); // Don't leave an id without bytes.
+      throw err;
+    }
+    return json({ id: meta.last_row_id });
+  },
+  "POST /api/admin/photos/delete": async ({ request, env, role }) => {
+    needAdmin(role);
+    const id = Number((await body(request)).id);
+    await env.PHOTOS.delete(`photo:${id}`);
+    await env.DB.prepare("DELETE FROM photos WHERE id = ?").bind(id).run();
     return json({ ok: true });
   },
 
@@ -135,7 +163,22 @@ const routes = {
   },
 };
 
+async function servePhoto({ env, role }, id) {
+  needGuest(role);
+  const bytes = await env.PHOTOS.get(`photo:${id}`, "stream");
+  if (!bytes) throw new HttpError(404, "Photo not found");
+  return new Response(bytes, {
+    headers: {
+      "content-type": "image/jpeg",
+      "x-content-type-options": "nosniff",
+      "cache-control": "private, max-age=31536000, immutable", // private: never stored by shared caches. A photo id never changes.
+    },
+  });
+}
+
 /** @returns {Promise<Response|null>} null when no content route matches. */
 export async function contentApi(key, ctx) {
-  return routes[key] ? routes[key](ctx) : null;
+  if (routes[key]) return routes[key](ctx);
+  const photo = key.match(/^GET \/api\/photos\/(\d+)$/);
+  return photo ? servePhoto(ctx, Number(photo[1])) : null;
 }

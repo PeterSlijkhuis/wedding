@@ -58,5 +58,11 @@
   "admin.confirmDelete": "Delete this group?",
   "admin.replied": "Replied",
   "admin.pending": "No reply yet",
-  "admin.noGuests": "No guests yet."
+  "admin.noGuests": "No guests yet.",
+  "page.photos": "Photos",
+  "admin.photos": "Photos",
+  "admin.photoAdd": "Add photos. They are resized on your device first, and only people with the guest password can see them.",
+  "admin.uploading": "Uploading",
+  "admin.photoFailed": "Could not upload:",
+  "admin.noPhotos": "No photos yet."
 }

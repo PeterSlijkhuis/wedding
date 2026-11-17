@@ -58,5 +58,11 @@
   "admin.confirmDelete": "Deze groep verwijderen?",
   "admin.replied": "Gereageerd",
   "admin.pending": "Nog geen reactie",
-  "admin.noGuests": "Nog geen gasten."
+  "admin.noGuests": "Nog geen gasten.",
+  "page.photos": "Foto's",
+  "admin.photos": "Foto's",
+  "admin.photoAdd": "Foto's toevoegen. Ze worden eerst op je apparaat verkleind en alleen mensen met het gastenwachtwoord kunnen ze zien.",
+  "admin.uploading": "Uploaden",
+  "admin.photoFailed": "Uploaden mislukt:",
+  "admin.noPhotos": "Nog geen foto's."
 }

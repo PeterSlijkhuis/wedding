@@ -44,3 +44,13 @@ test("validateRsvp", () => {
   // No meal options configured: meal is not required.
   assert.equal(validateRsvp({ guests: [{ id: 1, attending: true }] }, [1], []).guests[0].meal, "");
 });
+
+import { validatePhoto } from "../src/validate.js";
+
+test("validatePhoto accepts JPEG only and caps size", () => {
+  const jpeg = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0, 0]).buffer;
+  assert.doesNotThrow(() => validatePhoto(jpeg));
+  rejects(() => validatePhoto(Uint8Array.from([0x89, 0x50, 0x4e, 0x47]).buffer), /JPEG/); // PNG
+  rejects(() => validatePhoto(new ArrayBuffer(0)), /JPEG/);
+  rejects(() => validatePhoto(new Uint8Array(2_000_001).fill(0xff).buffer), /under/);
+});

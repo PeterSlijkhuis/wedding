@@ -15,14 +15,14 @@
     <div class="tiles" id="tiles"></div>
   </main>
   <script type="module">
-    import { init, get, el, t, formatDate, guestHeader } from "/js/app.js";
+    import { init, get, el, t, formatDate, guestHeader, pageHref } from "/js/app.js";
     const site = await init();
     await guestHeader();
     document.getElementById("names").textContent = site.names;
     document.getElementById("date").textContent = formatDate(site.date);
     const { pages } = await get("/api/nav");
     document.getElementById("tiles").replaceChildren(
-      ...pages.map((s) => el("a", { href: `/page?slug=${s}` }, t(`page.${s}`))),
+      ...pages.map((s) => el("a", { href: pageHref(s) }, t(`page.${s}`))),
       el("a", { href: "/rsvp" }, t("nav.rsvp")));
   </script>
 </body>

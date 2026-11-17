@@ -62,3 +62,14 @@ export function validateRsvp(input, partyIds, meals) {
   });
   return { guests, note: text(input.note, 1000, "Message") };
 }
+
+export const MAX_PHOTO_BYTES = 2_000_000;
+
+/** @param {ArrayBuffer} data uploaded photo; the admin page always sends a resized JPEG. */
+export function validatePhoto(data) {
+  if (data.byteLength < 3 || data.byteLength > MAX_PHOTO_BYTES) {
+    throw new HttpError(400, `Photo must be a JPEG under ${MAX_PHOTO_BYTES / 1_000_000} MB`);
+  }
+  const [a, b, c] = new Uint8Array(data, 0, 3);
+  if (a !== 0xff || b !== 0xd8 || c !== 0xff) throw new HttpError(400, "Photo must be a JPEG");
+}

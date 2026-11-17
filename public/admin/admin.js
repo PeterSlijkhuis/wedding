@@ -1,4 +1,4 @@
-import { init, get, post, t, el, logout, LANGUAGES } from "/js/app.js";
+import { init, get, post, upload, t, el, logout, LANGUAGES } from "/js/app.js";
 
 const PAGE_SLUGS = ["story", "schedule", "travel", "faq", "gifts"]; // keep in sync with src/validate.js
 const $ = (id) => document.getElementById(id);
@@ -82,3 +82,51 @@ bindForm("add-party", async () => {
   $("party-names").value = "";
   await renderParties();
 });
+
+// Photos: shrink on the device to a 1600px JPEG, then upload one at a time.
+async function shrink(file) {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return new Promise((resolve, reject) =>
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Could not convert the image"))), "image/jpeg", 0.85));
+}
+
+async function renderPhotos() {
+  const { photos } = await get("/api/photos");
+  if (!photos.length) return $("photos").replaceChildren(el("p", { class: "muted" }, t("admin.noPhotos")));
+  $("photos").replaceChildren(...photos.map((id) => el("div", { class: "thumb" },
+    el("img", { src: `/api/photos/${id}`, loading: "lazy", alt: "" }),
+    el("button", {
+      type: "button",
+      onclick: async () => {
+        if (!confirm(t("admin.confirmDelete"))) return;
+        await post("/api/admin/photos/delete", { id });
+        await renderPhotos();
+      },
+    }, "\u00d7"))));
+}
+await renderPhotos();
+
+$("photo-files").onchange = async (e) => {
+  const files = [...e.target.files];
+  const status = $("photo-status");
+  const failed = [];
+  for (const [i, file] of files.entries()) {
+    status.className = "status";
+    status.textContent = `${t("admin.uploading")} ${i + 1}/${files.length}`;
+    try {
+      await upload("/api/admin/photos", await shrink(file));
+    } catch (err) {
+      failed.push(`${file.name} (${err.message})`);
+    }
+  }
+  e.target.value = "";
+  status.className = failed.length ? "status error" : "status ok";
+  status.textContent = failed.length ? `${t("admin.photoFailed")} ${failed.join(", ")}` : t("admin.savedGeneric");
+  await renderPhotos();
+};

@@ -60,6 +60,14 @@
     </form>
 
     <section class="card">
+      <h2 data-i18n="admin.photos"></h2>
+      <label for="photo-files" data-i18n="admin.photoAdd"></label>
+      <input id="photo-files" type="file" accept="image/*" multiple>
+      <p class="status" id="photo-status" role="status"></p>
+      <div class="gallery" id="photos"></div>
+    </section>
+
+    <section class="card">
       <h2 data-i18n="admin.parties"></h2>
       <div id="parties"></div>
       <form id="add-party" style="margin-top:1rem">
