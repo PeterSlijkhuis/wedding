@@ -1,4 +1,5 @@
-:root {
+/* Themes only change these variables. Add a theme by adding a block and listing it in src/validate.js. */
+:root, [data-theme="classic"] {
   --bg: #fbf8f4;
   --text: #2b2622;
   --muted: #7a7068;
@@ -6,19 +7,75 @@
   --card: #ffffff;
   --border: #e6ddd3;
   --error: #b3261e;
-  font-family: Georgia, "Times New Roman", serif;
+  --radius: 8px;
+  --hero: linear-gradient(180deg, #f3e9dd 0%, #fbf8f4 100%);
+  --font: Georgia, "Times New Roman", serif;
+}
+[data-theme="modern"] {
+  --bg: #ffffff;
+  --text: #141414;
+  --muted: #6b6b6b;
+  --accent: #2f6b57;
+  --card: #f5f7f6;
+  --border: #dfe4e1;
+  --radius: 2px;
+  --hero: linear-gradient(180deg, #e8efec 0%, #ffffff 100%);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+[data-theme="garden"] {
+  --bg: #f3f7ef;
+  --text: #26331f;
+  --muted: #667a5a;
+  --accent: #5f8a43;
+  --card: #ffffff;
+  --border: #d5e0c9;
+  --radius: 18px;
+  --hero: linear-gradient(180deg, #dfeccf 0%, #f3f7ef 100%);
+  --font: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.6; }
+a { color: var(--accent); }
 header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; gap: 1rem; flex-wrap: wrap; }
-main { max-width: 36rem; margin: 0 auto; padding: 2rem 1rem; }
-h1 { font-weight: normal; font-size: 2.2rem; text-align: center; }
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
+header nav { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+header nav a { text-decoration: none; color: var(--muted); padding-bottom: 2px; }
+header nav a[aria-current="page"] { color: var(--text); border-bottom: 2px solid var(--accent); }
+.tools { display: flex; gap: 1rem; align-items: center; }
+main { max-width: 40rem; margin: 0 auto; padding: 2rem 1rem; }
+h1 { font-weight: normal; font-size: 2.2rem; text-align: center; margin: 0.5rem 0 1.5rem; }
+h2 { font-weight: normal; font-size: 1.4rem; margin-top: 0; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
 label { display: block; margin-bottom: 0.4rem; color: var(--muted); }
-input, select, button { font: inherit; padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid var(--border); }
-input { width: 100%; margin-bottom: 1rem; background: #fff; }
-button { background: var(--accent); color: #fff; border: none; cursor: pointer; }
+input, select, button, textarea { font: inherit; padding: 0.6rem 0.8rem; border-radius: var(--radius); border: 1px solid var(--border); }
+input, textarea { width: 100%; margin-bottom: 1rem; background: #fff; color: var(--text); }
+select { background: #fff; color: var(--text); max-width: 100%; }
+button, .btn { background: var(--accent); color: #fff; border: none; cursor: pointer; text-decoration: none; display: inline-block; font: inherit; padding: 0.6rem 1.2rem; border-radius: var(--radius); }
 button.link { background: none; color: var(--accent); padding: 0; text-decoration: underline; }
 .error { color: var(--error); min-height: 1.6em; }
 .ok { color: var(--accent); min-height: 1.6em; }
+.status { min-height: 1.6em; }
+.muted { color: var(--muted); }
+
+/* Landing page */
+.hero { min-height: 100vh; display: flex; flex-direction: column; background: var(--hero); }
+.hero header { justify-content: flex-end; }
+.hero .center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem 1rem 6rem; }
+.hero h1 { font-size: clamp(2.4rem, 9vw, 5rem); margin-bottom: 0.5rem; }
+.hero .date { font-size: 1.3rem; letter-spacing: 0.05em; }
+.hero .tagline { color: var(--muted); font-size: 1.1rem; margin: 0.5rem 0 2rem; }
+
+/* Guest area */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 1rem; }
+.tiles a { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; text-align: center; text-decoration: none; }
+.page p { white-space: pre-line; }
+.guest-row { border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem; }
+.guest-row:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+.guest-row h3 { margin: 0 0 0.6rem; font-weight: normal; }
+.party-pick { display: block; width: 100%; text-align: left; margin-bottom: 0.6rem; background: var(--card); color: var(--text); border: 1px solid var(--border); }
+
+/* Admin */
+.party { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--border); padding: 0.8rem 0; }
+.party:first-of-type { border-top: none; }
+.row { display: flex; gap: 1rem; flex-wrap: wrap; }
+.row > * { flex: 1; min-width: 8rem; }

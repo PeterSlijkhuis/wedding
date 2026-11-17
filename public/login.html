@@ -18,8 +18,8 @@
     </form>
   </main>
   <script type="module">
-    import { initI18n, post, t } from "/js/app.js";
-    await initI18n();
+    import { init, post, t } from "/js/app.js";
+    await init();
     document.getElementById("login").onsubmit = async (e) => {
       e.preventDefault();
       const error = document.getElementById("error");
@@ -27,7 +27,7 @@
       try {
         const { role } = await post("/api/login", { password: document.getElementById("password").value });
         const next = new URLSearchParams(location.search).get("next");
-        location.href = next?.startsWith("/") && !next.startsWith("//") ? next : role === "admin" ? "/admin/" : "/";
+        location.href = next?.startsWith("/") && !next.startsWith("//") ? next : role === "admin" ? "/admin/" : "/home";
       } catch (err) {
         error.textContent = err.message === "Wrong password" ? t("login.wrong") : err.message;
       }

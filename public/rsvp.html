@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wedding</title>
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <header></header>
+  <main>
+    <h1 data-i18n="rsvp.title"></h1>
+    <form class="card" id="search">
+      <p data-i18n="rsvp.intro"></p>
+      <input id="q" autocomplete="off" required data-i18n-placeholder="rsvp.search">
+      <button type="submit" data-i18n="rsvp.find"></button>
+      <p class="error" id="search-error" role="alert"></p>
+    </form>
+    <div id="results"></div>
+    <form class="card" id="answer" hidden>
+      <p class="muted" id="already" hidden data-i18n="rsvp.already"></p>
+      <div id="guests"></div>
+      <label for="note" data-i18n="rsvp.note"></label>
+      <textarea id="note" rows="3" maxlength="1000"></textarea>
+      <p class="status" id="answer-status" role="status"></p>
+      <button type="submit" data-i18n="rsvp.submit"></button>
+    </form>
+  </main>
+  <script type="module">
+    import { init, get, post, el, t, guestHeader } from "/js/app.js";
+    await init();
+    await guestHeader();
+
+    const $ = (id) => document.getElementById(id);
+    let meals = [];
+    let party = null;
+
+    function say(node, key, className) {
+      node.textContent = key ? t(key) : "";
+      node.className = className;
+    }
+
+    function guestRow(g) {
+      const attending = el("select", { "data-field": "attending" },
+        el("option", { value: "" }, t("rsvp.choose")),
+        el("option", { value: "yes" }, t("rsvp.yes")),
+        el("option", { value: "no" }, t("rsvp.no")));
+      attending.value = g.attending === null ? "" : g.attending ? "yes" : "no";
+
+      const meal = el("select", { "data-field": "meal" },
+        el("option", { value: "" }, t("rsvp.choose")), ...meals.map((m) => el("option", { value: m }, m)));
+      meal.value = g.meal;
+      const dietary = el("input", { "data-field": "dietary", maxlength: "300", value: g.dietary });
+
+      const details = el("div", {},
+        meals.length ? el("div", {}, el("label", {}, t("rsvp.meal")), meal) : null,
+        el("label", { style: "margin-top:.8rem" }, t("rsvp.dietary")), dietary);
+      const sync = () => { details.hidden = attending.value !== "yes"; };
+      attending.onchange = sync;
+      sync();
+
+      const row = el("div", { class: "guest-row", "data-id": g.id },
+        el("h3", {}, g.name), el("label", {}, t("rsvp.attending")), attending, details);
+      return row;
+    }
+
+    function openParty(p) {
+      party = p;
+      $("guests").replaceChildren(...p.guests.map(guestRow));
+      $("note").value = p.note;
+      $("already").hidden = !p.responded;
+      $("answer").hidden = false;
+      say($("answer-status"), "", "status");
+      $("answer").scrollIntoView({ behavior: "smooth" });
+    }
+
+    $("search").onsubmit = async (e) => {
+      e.preventDefault();
+      $("answer").hidden = true;
+      say($("search-error"), "", "error");
+      $("results").replaceChildren();
+      if ($("q").value.trim().length < 3) return say($("search-error"), "rsvp.tooShort", "error");
+      try {
+        const res = await get(`/api/rsvp/search?q=${encodeURIComponent($("q").value)}`);
+        meals = res.meals;
+        if (!res.parties.length) return say($("search-error"), "rsvp.none", "error");
+        if (res.parties.length === 1) return openParty(res.parties[0]);
+        $("results").replaceChildren(...res.parties.map((p) =>
+          el("button", { type: "button", class: "party-pick", onclick: () => openParty(p) }, p.guests.map((g) => g.name).join(", "))));
+      } catch (err) {
+        $("search-error").textContent = err.message;
+      }
+    };
+
+    $("answer").onsubmit = async (e) => {
+      e.preventDefault();
+      const rows = [...$("guests").children];
+      const guests = rows.map((row) => {
+        const field = (name) => row.querySelector(`[data-field="${name}"]`).value;
+        return { id: Number(row.dataset.id), attending: field("attending") === "yes", answered: field("attending") !== "",
+          meal: meals.length ? field("meal") : "", dietary: field("dietary") };
+      });
+      if (guests.some((g) => !g.answered)) return say($("answer-status"), "rsvp.answerAll", "status error");
+      if (meals.length && guests.some((g) => g.attending && !g.meal)) return say($("answer-status"), "rsvp.pickMeal", "status error");
+      try {
+        await post("/api/rsvp", { party_id: party.id, guests, note: $("note").value });
+        say($("answer-status"), "rsvp.thanks", "status ok");
+      } catch (err) {
+        $("answer-status").className = "status error";
+        $("answer-status").textContent = err.message;
+      }
+    };
+  </script>
+</body>
+</html>

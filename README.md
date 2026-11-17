@@ -13,7 +13,14 @@ npm run db:migrate:local
 npm run dev                           # open http://localhost:8787
 ```
 
-Log in with the admin password, open `/admin/` and set the guest password.
+Log in with the admin password (`change-me` locally). In `/admin/` you can:
+
+- set names, date, tagline, theme (Classic, Modern, Garden) and meal options
+- set the guest password you share with your guests
+- write the text pages (Our story, Schedule, Travel, FAQ, Gifts) per language; a page with no text stays hidden
+- add guest groups (one invitation per group) and see who replied
+
+Anyone can see the landing page. Everything else needs the guest password. Guests find their invitation on the RSVP page by typing part of a name.
 
 ## Put it online
 

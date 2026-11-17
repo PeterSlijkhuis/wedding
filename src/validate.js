@@ -1,0 +1,64 @@
+// Pure input validation, no I/O. Every function throws HttpError(400) on bad input.
+import { HttpError } from "./util.js";
+
+export const THEMES = ["classic", "modern", "garden"];
+export const PAGE_SLUGS = ["story", "schedule", "travel", "faq", "gifts"];
+export const LANGS = ["en", "es", "nl", "mk"];
+
+function text(value, max, field) {
+  const s = String(value ?? "").trim();
+  if (s.length > max) throw new HttpError(400, `${field} is too long (max ${max} characters)`);
+  return s;
+}
+
+/** Lowercase, accent-free form of a name, used to match what guests type. */
+export const nameKey = (s) => String(s).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim().replace(/\s+/g, " ");
+
+export function validateSite(input) {
+  const date = text(input.date, 10, "Date");
+  if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new HttpError(400, "Date must look like 2027-06-12");
+  const theme = text(input.theme, 20, "Theme") || "classic";
+  if (!THEMES.includes(theme)) throw new HttpError(400, `Theme must be one of: ${THEMES.join(", ")}`);
+  const rawMeals = Array.isArray(input.meals) ? input.meals : String(input.meals ?? "").split(",");
+  const meals = rawMeals.map((m) => text(m, 60, "Meal option")).filter(Boolean);
+  if (meals.length > 10) throw new HttpError(400, "At most 10 meal options");
+  return { names: text(input.names, 100, "Names"), date, tagline: text(input.tagline, 200, "Tagline"), theme, meals };
+}
+
+export function validatePage(input) {
+  const slug = String(input.slug ?? "");
+  const lang = String(input.lang ?? "");
+  if (!PAGE_SLUGS.includes(slug)) throw new HttpError(400, "Unknown page");
+  if (!LANGS.includes(lang)) throw new HttpError(400, "Unknown language");
+  return { slug, lang, title: text(input.title, 100, "Title"), body: text(input.body, 20000, "Text") };
+}
+
+/** One guest name per line, blank lines ignored. */
+export function parseNames(input) {
+  const names = String(input ?? "").split(/\r?\n/).map((n) => text(n, 100, "Name")).filter(Boolean);
+  if (!names.length) throw new HttpError(400, "Enter at least one name");
+  if (names.length > 20) throw new HttpError(400, "At most 20 names per group");
+  return names;
+}
+
+/**
+ * @param {object} input request body: { guests: [{ id, attending, meal, dietary }], note }
+ * @param {number[]} partyIds ids of every guest in the party being answered
+ * @param {string[]} meals meal options configured by the couple (empty = no meal question)
+ */
+export function validateRsvp(input, partyIds, meals) {
+  const answers = Array.isArray(input.guests) ? input.guests : [];
+  if (answers.length !== partyIds.length) throw new HttpError(400, "Answer for every guest in the group");
+  const seen = new Set();
+  const guests = answers.map((a) => {
+    const id = Number(a.id);
+    if (!partyIds.includes(id) || seen.has(id)) throw new HttpError(400, "Unknown guest in answer");
+    seen.add(id);
+    if (typeof a.attending !== "boolean") throw new HttpError(400, "Answer yes or no for every guest");
+    if (!a.attending) return { id, attending: false, meal: "", dietary: "" };
+    const meal = text(a.meal, 60, "Meal");
+    if (meals.length && !meals.includes(meal)) throw new HttpError(400, "Pick a meal for every guest who is attending");
+    return { id, attending: true, meal, dietary: text(a.dietary, 300, "Dietary needs") };
+  });
+  return { guests, note: text(input.note, 1000, "Message") };
+}

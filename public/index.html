@@ -7,17 +7,21 @@
   <link rel="stylesheet" href="/css/site.css">
 </head>
 <body>
-  <header>
-    <button class="link" id="logout" data-i18n="nav.logout"></button>
-    <select class="lang" aria-label="Language"></select>
-  </header>
-  <main>
-    <h1 data-i18n="home.welcome"></h1>
-  </main>
+  <div class="hero">
+    <header><select class="lang" aria-label="Language"></select></header>
+    <div class="center">
+      <h1 id="names"></h1>
+      <div class="date" id="date"></div>
+      <p class="tagline" id="tagline"></p>
+      <a class="btn" href="/home" data-i18n="landing.enter"></a>
+    </div>
+  </div>
   <script type="module">
-    import { initI18n, logout } from "/js/app.js";
-    await initI18n();
-    document.getElementById("logout").onclick = logout;
+    import { init, t, formatDate } from "/js/app.js";
+    const site = await init();
+    document.getElementById("names").textContent = site.names;
+    document.getElementById("date").textContent = formatDate(site.date);
+    document.getElementById("tagline").textContent = site.tagline || t("home.welcome");
   </script>
 </body>
 </html>

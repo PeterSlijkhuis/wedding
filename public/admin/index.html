@@ -8,34 +8,68 @@
 </head>
 <body>
   <header>
-    <span><a href="/" data-i18n="nav.site"></a> · <button class="link" id="logout" data-i18n="nav.logout"></button></span>
+    <span><a href="/home" data-i18n="nav.site"></a> · <button class="link" id="logout" data-i18n="nav.logout"></button></span>
     <select class="lang" aria-label="Language"></select>
   </header>
   <main>
     <h1 data-i18n="admin.title"></h1>
-    <form class="card" id="guest-password">
-      <label for="password" data-i18n="admin.guestPassword"></label>
-      <input id="password" type="text" minlength="6" required autocomplete="off">
-      <p id="status" role="status"></p>
+
+    <form class="card" id="site">
+      <h2 data-i18n="admin.site"></h2>
+      <label for="names" data-i18n="admin.names"></label>
+      <input id="names" maxlength="100">
+      <div class="row">
+        <div><label for="date" data-i18n="admin.date"></label><input id="date" type="date"></div>
+        <div>
+          <label for="theme" data-i18n="admin.theme"></label>
+          <select id="theme">
+            <option value="classic">Classic</option>
+            <option value="modern">Modern</option>
+            <option value="garden">Garden</option>
+          </select>
+        </div>
+      </div>
+      <label for="tagline" data-i18n="admin.tagline"></label>
+      <input id="tagline" maxlength="200">
+      <label for="meals" data-i18n="admin.meals"></label>
+      <input id="meals">
+      <p class="status" role="status"></p>
       <button type="submit" data-i18n="admin.save"></button>
     </form>
+
+    <form class="card" id="guest-password">
+      <h2 data-i18n="admin.guestPasswordTitle"></h2>
+      <label for="password" data-i18n="admin.guestPassword"></label>
+      <input id="password" type="text" minlength="6" required autocomplete="off">
+      <p class="status" role="status"></p>
+      <button type="submit" data-i18n="admin.save"></button>
+    </form>
+
+    <form class="card" id="page">
+      <h2 data-i18n="admin.pages"></h2>
+      <div class="row">
+        <div><label for="slug" data-i18n="admin.page"></label><select id="slug"></select></div>
+        <div><label for="lang" data-i18n="admin.language"></label><select id="lang"></select></div>
+      </div>
+      <label for="title" style="margin-top:1rem" data-i18n="admin.pageTitle"></label>
+      <input id="title" maxlength="100">
+      <label for="body" data-i18n="admin.pageBody"></label>
+      <textarea id="body" rows="10" maxlength="20000"></textarea>
+      <p class="status" role="status"></p>
+      <button type="submit" data-i18n="admin.save"></button>
+    </form>
+
+    <section class="card">
+      <h2 data-i18n="admin.parties"></h2>
+      <div id="parties"></div>
+      <form id="add-party" style="margin-top:1rem">
+        <label for="party-names" data-i18n="admin.partyNames"></label>
+        <textarea id="party-names" rows="3" required></textarea>
+        <p class="status" role="status"></p>
+        <button type="submit" data-i18n="admin.add"></button>
+      </form>
+    </section>
   </main>
-  <script type="module">
-    import { initI18n, post, t, logout } from "/js/app.js";
-    await initI18n();
-    document.getElementById("logout").onclick = logout;
-    document.getElementById("guest-password").onsubmit = async (e) => {
-      e.preventDefault();
-      const status = document.getElementById("status");
-      try {
-        await post("/api/admin/guest-password", { password: document.getElementById("password").value });
-        status.className = "ok";
-        status.textContent = t("admin.saved");
-      } catch (err) {
-        status.className = "error";
-        status.textContent = err.message;
-      }
-    };
-  </script>
+  <script type="module" src="/admin/admin.js"></script>
 </body>
 </html>

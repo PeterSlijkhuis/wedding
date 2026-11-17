@@ -1,8 +1,11 @@
 import { hashPassword, verifyPassword, safeEqual, signToken, verifyToken } from "./auth.js";
+import { contentApi } from "./content.js";
+import { HttpError, json, body, getSetting, setSetting } from "./util.js";
 
 const COOKIE = "session";
 const SESSION_SECONDS = 30 * 24 * 3600;
-const PUBLIC_PATHS = ["/login", "/login.html", "/favicon.ico"];
+// Reachable without a password: the landing page, the login page and their assets.
+const PUBLIC_PATHS = ["/", "/index.html", "/login", "/login.html", "/favicon.ico"];
 const PUBLIC_PREFIXES = ["/css/", "/js/", "/i18n/"];
 
 export default {
@@ -10,8 +13,9 @@ export default {
     try {
       return await route(request, env);
     } catch (err) {
+      if (err instanceof HttpError) return json({ error: err.message }, err.status);
       console.error(err);
-      return json({ error: err.expose ? err.message : "Server error" }, err.status || 500);
+      return json({ error: "Server error" }, 500);
     }
   },
 };
@@ -19,7 +23,7 @@ export default {
 async function route(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
-  if (path.startsWith("/api/")) return api(request, env, path);
+  if (path.startsWith("/api/")) return api(request, env, url);
 
   const role = await currentRole(request, env);
   const isPublic = PUBLIC_PATHS.includes(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p));
@@ -33,14 +37,14 @@ async function route(request, env) {
   return env.ASSETS.fetch(request);
 }
 
-async function api(request, env, path) {
+async function api(request, env, url) {
   if (request.method === "POST" && !request.headers.get("content-type")?.startsWith("application/json")) {
     return json({ error: "Expected application/json" }, 415); // Also blocks cross-site form posts (CSRF).
   }
-  const key = `${request.method} ${path}`;
+  const key = `${request.method} ${url.pathname}`;
 
   if (key === "POST /api/login") {
-    const { password } = await request.json();
+    const { password } = await body(request);
     const role = await roleForPassword(String(password ?? ""), env);
     if (!role) return json({ error: "Wrong password" }, 401);
     const exp = Math.floor(Date.now() / 1000) + SESSION_SECONDS;
@@ -48,24 +52,25 @@ async function api(request, env, path) {
     return json({ role }, 200, { "set-cookie": cookie(token, SESSION_SECONDS) });
   }
   if (key === "POST /api/logout") return json({ ok: true }, 200, { "set-cookie": cookie("", 0) });
-  if (key === "GET /api/me") return json({ role: await currentRole(request, env) });
+
+  const role = await currentRole(request, env);
+  if (key === "GET /api/me") return json({ role });
 
   if (key === "POST /api/admin/guest-password") {
-    if ((await currentRole(request, env)) !== "admin") return json({ error: "Admin login required" }, 403);
-    const { password } = await request.json();
+    if (role !== "admin") return json({ error: "Admin login required" }, role ? 403 : 401);
+    const { password } = await body(request);
     if (typeof password !== "string" || password.length < 6) {
       return json({ error: "Guest password must be at least 6 characters" }, 400);
     }
     await setSetting(env, "guest_password", await hashPassword(password));
     return json({ ok: true });
   }
-  return json({ error: "Not found" }, 404);
+  return (await contentApi(key, { request, env, role, url })) ?? json({ error: "Not found" }, 404);
 }
 
 async function roleForPassword(password, env) {
   if (!env.ADMIN_PASSWORD) {
-    const err = new Error("ADMIN_PASSWORD is not set. Run: npx wrangler secret put ADMIN_PASSWORD");
-    throw Object.assign(err, { status: 500, expose: true });
+    throw new HttpError(500, "ADMIN_PASSWORD is not set. Run: npx wrangler secret put ADMIN_PASSWORD");
   }
   if (await safeEqual(password, env.ADMIN_PASSWORD)) return "admin";
   const guestHash = await getSetting(env, "guest_password");
@@ -89,17 +94,4 @@ async function sessionSecret(env) {
   return getSetting(env, "session_secret"); // Re-read: a parallel request may have won the insert.
 }
 
-async function getSetting(env, key) {
-  const row = await env.DB.prepare("SELECT value FROM settings WHERE key = ?").bind(key).first();
-  return row?.value ?? null;
-}
-
-async function setSetting(env, key, value) {
-  await env.DB.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
-    .bind(key, value).run();
-}
-
 const cookie = (value, maxAge) => `${COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
-
-const json = (data, status = 200, headers = {}) =>
-  new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json", ...headers } });

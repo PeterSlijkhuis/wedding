@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wedding</title>
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <header></header>
+  <main>
+    <h1 id="title"></h1>
+    <div class="page" id="body"></div>
+  </main>
+  <script type="module">
+    import { init, get, t, paragraphs, guestHeader } from "/js/app.js";
+    await init();
+    await guestHeader();
+    const slug = new URLSearchParams(location.search).get("slug");
+    const lang = document.documentElement.lang;
+    try {
+      const page = await get(`/api/pages?slug=${encodeURIComponent(slug)}&lang=${lang}`);
+      document.getElementById("title").textContent = page.title || t(`page.${slug}`);
+      document.getElementById("body").replaceChildren(...paragraphs(page.body));
+    } catch (err) {
+      document.getElementById("title").textContent = t("page.empty");
+    }
+  </script>
+</body>
+</html>
