@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <title>Wedding</title>
   <link rel="stylesheet" href="/css/site.css">
 </head>
@@ -13,7 +14,7 @@
     <div class="page" id="body"></div>
   </main>
   <script type="module">
-    import { init, get, t, paragraphs, guestHeader } from "/js/app.js";
+    import { init, get, t, paragraphs, guestHeader, placedPhoto } from "/js/app.js";
     const site = await init();
     await guestHeader(site);
     const slug = new URLSearchParams(location.search).get("slug");
@@ -22,6 +23,8 @@
       const page = await get(`/api/pages?slug=${encodeURIComponent(slug)}&lang=${lang}`);
       document.getElementById("title").textContent = page.title || t(`page.${slug}`);
       document.getElementById("body").replaceChildren(...paragraphs(page.body));
+      const photoId = site.pagePhotos?.[slug];
+      if (photoId) document.getElementById("title").after(placedPhoto(site, photoId, "page-photo"));
     } catch (err) {
       document.getElementById("title").textContent = t("page.empty");
     }

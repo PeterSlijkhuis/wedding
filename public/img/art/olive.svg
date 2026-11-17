@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 100" fill="#000">
+<path d="M14 64 C80 54 160 52 248 34" stroke="#000" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".8"/>
+<path d="M0 0 Q12.875 -7.210000000000001 25.75 0 Q12.875 7.210000000000001 0 0Z" transform="translate(24.0 63.0) rotate(-58)" opacity="0.85"/>
+<path d="M0 0 Q13.625 -7.630000000000001 27.25 0 Q13.625 7.630000000000001 0 0Z" transform="translate(43.5 62.3) rotate(18)" opacity="0.6"/>
+<path d="M0 0 Q14.375 -8.05 28.75 0 Q14.375 8.05 0 0Z" transform="translate(62.9 60.1) rotate(-58)" opacity="0.75"/>
+<path d="M0 0 Q15.125 -8.47 30.25 0 Q15.125 8.47 0 0Z" transform="translate(82.4 56.2) rotate(18)" opacity="0.85"/>
+<path d="M0 0 Q15.875 -8.89 31.75 0 Q15.875 8.89 0 0Z" transform="translate(101.8 52.0) rotate(-58)" opacity="0.6"/>
+<path d="M0 0 Q16.625 -9.31 33.25 0 Q16.625 9.31 0 0Z" transform="translate(121.3 49.3) rotate(18)" opacity="0.75"/>
+<path d="M0 0 Q16.625 -9.31 33.25 0 Q16.625 9.31 0 0Z" transform="translate(140.7 48.3) rotate(-58)" opacity="0.85"/>
+<path d="M0 0 Q15.875 -8.89 31.75 0 Q15.875 8.89 0 0Z" transform="translate(160.2 47.8) rotate(18)" opacity="0.6"/>
+<path d="M0 0 Q15.125 -8.47 30.25 0 Q15.125 8.47 0 0Z" transform="translate(179.6 46.1) rotate(-58)" opacity="0.75"/>
+<path d="M0 0 Q14.375 -8.05 28.75 0 Q14.375 8.05 0 0Z" transform="translate(199.1 42.6) rotate(18)" opacity="0.85"/>
+<path d="M0 0 Q13.625 -7.630000000000001 27.25 0 Q13.625 7.630000000000001 0 0Z" transform="translate(218.5 38.3) rotate(-58)" opacity="0.6"/>
+<path d="M0 0 Q12.875 -7.210000000000001 25.75 0 Q12.875 7.210000000000001 0 0Z" transform="translate(238.0 35.0) rotate(18)" opacity="0.75"/>
+<ellipse cx="70" cy="70" rx="6" ry="8" opacity=".9"/>
+<ellipse cx="150" cy="60" rx="6" ry="8" opacity=".9"/>
+<ellipse cx="205" cy="50" rx="6" ry="8" opacity=".9"/>
+</svg>

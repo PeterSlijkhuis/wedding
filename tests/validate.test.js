@@ -25,6 +25,11 @@ test("validateSite", () => {
   rejects(() => validateSite({ date: "12/06/2027" }), /Date/);
   rejects(() => validateSite({ theme: "neon" }), /Theme/);
   rejects(() => validateSite({ palette: "neon" }), /palette/);
+  assert.deepEqual(validateSite({ pagePhotos: { story: 3, faq: 0 } }).pagePhotos, { story: 3 });
+  rejects(() => validateSite({ pagePhotos: { secret: 3 } }), /Page photos/);
+  assert.deepEqual(validateSite({ photoFocus: { 3: [20, 80] } }).photoFocus, { 3: [20, 80] });
+  rejects(() => validateSite({ photoFocus: { 3: [20, 180] } }), /focus/);
+  rejects(() => validateSite({ coverShape: "star" }), /shape/);
   assert.equal(validateSite({ theme: "fiesta", font: "lora" }).font, "lora");
 });
 

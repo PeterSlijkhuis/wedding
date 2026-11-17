@@ -1,10 +1,11 @@
 // Pure input validation, no I/O. Every function throws HttpError(400) on bad input.
 import { HttpError } from "./util.js";
-import { TEMPLATES, PALETTES, FONTS, LAYOUTS, ARTS } from "../public/js/designs.js";
+import { TEMPLATES, PALETTES, FONTS, LAYOUTS, ARTS, MOTIONS } from "../public/js/designs.js";
 
 export const THEMES = Object.keys(TEMPLATES);
 export const PAGE_SLUGS = ["welcome", "story", "schedule", "travel", "faq", "gifts"]; // "welcome" is shown on the home page, not in the menu
 export const LANGS = ["en", "es", "nl", "mk"];
+export const COVER_SHAPES = ["rounded", "arch", "circle", "wide"];
 
 function text(value, max, field) {
   const s = String(value ?? "").trim();
@@ -41,15 +42,32 @@ export function validateSite(input) {
     if (value && !(value in list)) throw new HttpError(400, `${key} must be one of: ${Object.keys(list).join(", ")}`);
     return value;
   };
-  const design = { palette: part("palette", PALETTES), font: part("font", FONTS), layout: part("layout", LAYOUTS), art: part("art", ARTS) };
+  const design = { palette: part("palette", PALETTES), font: part("font", FONTS), layout: part("layout", LAYOUTS), art: part("art", ARTS), motion: part("motion", MOTIONS) };
   const rawMeals = Array.isArray(input.meals) ? input.meals : String(input.meals ?? "").split(",");
   const meals = rawMeals.map((m) => text(m, 60, "Meal option")).filter(Boolean);
   if (meals.length > 10) throw new HttpError(400, "At most 10 meal options");
   const coverPhoto = Number(input.coverPhoto ?? 0);
   if (!Number.isInteger(coverPhoto) || coverPhoto < 0) throw new HttpError(400, "Cover photo must be a photo id or 0");
+  const coverShape = text(input.coverShape, 10, "Photo shape") || "rounded";
+  if (!COVER_SHAPES.includes(coverShape)) throw new HttpError(400, `Photo shape must be one of: ${COVER_SHAPES.join(", ")}`);
+  // A photo at the top of a text page: { story: 3 }.
+  const pagePhotos = {};
+  for (const [slug, id] of Object.entries(input.pagePhotos ?? {})) {
+    if (!PAGE_SLUGS.includes(slug) || !Number.isInteger(id) || id < 0) throw new HttpError(400, "Page photos must map a page to a photo id");
+    if (id) pagePhotos[slug] = id;
+  }
+  // Where each photo is anchored when it is cropped, in percent: { 3: [50, 30] }.
+  const photoFocus = {};
+  const focusEntries = Object.entries(input.photoFocus ?? {});
+  if (focusEntries.length > 500) throw new HttpError(400, "Too many photo focus points");
+  for (const [id, point] of focusEntries) {
+    const ok = /^\d+$/.test(id) && Array.isArray(point) && point.length === 2 && point.every((n) => Number.isInteger(n) && n >= 0 && n <= 100);
+    if (!ok) throw new HttpError(400, "A focus point is two whole percentages, like [50, 30]");
+    photoFocus[id] = point;
+  }
   return {
     names: text(input.names, 100, "Names"), date, location: text(input.location, 200, "Location"), rsvpDeadline,
-    countdown: input.countdown === true, tagline, theme, ...design, accent, coverPhoto, meals,
+    countdown: input.countdown === true, tagline, theme, ...design, accent, coverPhoto, coverShape, pagePhotos, photoFocus, meals,
   };
 }
 

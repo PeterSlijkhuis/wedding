@@ -16,9 +16,9 @@ npm run dev                           # open http://localhost:8787
 Log in with the admin password (`change-me` locally). `/admin/` is a dashboard of tiles with a live preview of your site next to it, and a menu (top left) with every section:
 
 - Event details: names, date, location, RSVP deadline, countdown, a greeting per language (guests see the one for the language they pick, or English) and meal options
-- Design: pick one of 20 templates (filter by mood: elegant, bold, charming, earthy, expressive), then change any of its four parts: colors (17 palettes), fonts (12 pairings), layout (centered, framed, split, bold banner) and decoration. Also an accent color and a cover photo
+- Design: pick one of 23 templates (filter by mood: elegant, bold, charming, earthy, expressive), then change any of its parts: colors (17 palettes), fonts (12 pairings), layout (centered, framed, split, bold banner), decoration (flowers, olive branch, stars, sun and more) and motion (still, gentle, lively). Also an accent color, a cover photo and its shape
 - Website: the home page message and the text pages (Our story, Schedule, Travel, FAQ, Gifts) per language; a page with no text stays hidden
-- Photos: uploaded from your device (resized there, stored in free Cloudflare KV), visible only to people with the guest password
+- Photos: a private library for the couple. Drag photos in; they are resized to 2000px on your device, which also strips location data, and stored in free Cloudflare KV. Guests see only the photos you place on the site (the cover and page photos), and only after the guest password. Pick a focus point per photo so cropping never cuts off faces
 - Guest list and RSVP: add guest groups (one invitation per group) and see who replied
 - Privacy: set the guest password you share with your guests
 
@@ -51,5 +51,5 @@ MIT
 
 ## Design system
 
-Everything visual lives in `public/js/designs.js`: palettes, font pairings, layouts, decorations and the templates that combine them. Add a palette or template there and it shows up in the admin. `npm test` checks every palette for readable contrast (WCAG AA). Fonts are served from `public/fonts/` (SIL Open Font License), so guests never contact a font service, and all of them include Cyrillic for Macedonian.
+Everything visual lives in `public/js/designs.js`: palettes, font pairings, layouts, decorations and the templates that combine them. Add a palette or template there and it shows up in the admin. `npm test` checks every palette for readable contrast (WCAG AA). Fonts are served from `public/fonts/` (SIL Open Font License), so guests never contact a font service, and all of them include Cyrillic for Macedonian. Motion plays once per page per visit, never on scroll or in a loop, and is off for anyone whose device asks for reduced motion. To add flowers, stars or other decorations, see [docs/design-elements.md](docs/design-elements.md).
 

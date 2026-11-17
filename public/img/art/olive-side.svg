@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 640" fill="#000">
+<path d="M70 636 C84 520 62 400 80 300 C94 210 70 120 86 20" stroke="#000" stroke-width="2.5" fill="none" opacity=".75"/>
+<path d="M0 0 Q20.0 -11.200000000000001 40 0 Q20.0 11.200000000000001 0 0Z" transform="translate(70.6 610.0) rotate(-152)" opacity="0.85"/>
+<path d="M0 0 Q18.5 -10.360000000000001 37 0 Q18.5 10.360000000000001 0 0Z" transform="translate(74.1 580.0) rotate(-28)" opacity="0.6"/>
+<path d="M0 0 Q17.0 -9.520000000000001 34 0 Q17.0 9.520000000000001 0 0Z" transform="translate(78.0 550.0) rotate(-152)" opacity="0.75"/>
+<ellipse cx="96" cy="556" rx="6" ry="8" opacity=".85"/>
+<path d="M0 0 Q15.5 -8.680000000000001 31 0 Q15.5 8.680000000000001 0 0Z" transform="translate(81.5 520.0) rotate(-28)" opacity="0.85"/>
+<path d="M0 0 Q20.0 -11.200000000000001 40 0 Q20.0 11.200000000000001 0 0Z" transform="translate(83.6 490.0) rotate(-152)" opacity="0.6"/>
+<path d="M0 0 Q18.5 -10.360000000000001 37 0 Q18.5 10.360000000000001 0 0Z" transform="translate(83.9 460.0) rotate(-28)" opacity="0.75"/>
+<path d="M0 0 Q17.0 -9.520000000000001 34 0 Q17.0 9.520000000000001 0 0Z" transform="translate(82.2 430.0) rotate(-152)" opacity="0.85"/>
+<path d="M0 0 Q15.5 -8.680000000000001 31 0 Q15.5 8.680000000000001 0 0Z" transform="translate(79.0 400.0) rotate(-28)" opacity="0.6"/>
+<ellipse cx="61" cy="406" rx="6" ry="8" opacity=".85"/>
+<path d="M0 0 Q20.0 -11.200000000000001 40 0 Q20.0 11.200000000000001 0 0Z" transform="translate(75.1 370.0) rotate(-152)" opacity="0.75"/>
+<path d="M0 0 Q18.5 -10.360000000000001 37 0 Q18.5 10.360000000000001 0 0Z" transform="translate(71.4 340.0) rotate(-28)" opacity="0.85"/>
+<path d="M0 0 Q17.0 -9.520000000000001 34 0 Q17.0 9.520000000000001 0 0Z" transform="translate(68.8 310.0) rotate(-152)" opacity="0.6"/>
+<path d="M0 0 Q15.5 -8.680000000000001 31 0 Q15.5 8.680000000000001 0 0Z" transform="translate(68.0 280.0) rotate(-28)" opacity="0.75"/>
+<path d="M0 0 Q20.0 -11.200000000000001 40 0 Q20.0 11.200000000000001 0 0Z" transform="translate(69.2 250.0) rotate(-152)" opacity="0.85"/>
+<ellipse cx="87" cy="256" rx="6" ry="8" opacity=".85"/>
+<path d="M0 0 Q18.5 -10.360000000000001 37 0 Q18.5 10.360000000000001 0 0Z" transform="translate(72.0 220.0) rotate(-28)" opacity="0.6"/>
+<path d="M0 0 Q17.0 -9.520000000000001 34 0 Q17.0 9.520000000000001 0 0Z" transform="translate(75.8 190.0) rotate(-152)" opacity="0.75"/>
+<path d="M0 0 Q15.5 -8.680000000000001 31 0 Q15.5 8.680000000000001 0 0Z" transform="translate(79.7 160.0) rotate(-28)" opacity="0.85"/>
+<path d="M0 0 Q20.0 -11.200000000000001 40 0 Q20.0 11.200000000000001 0 0Z" transform="translate(82.6 130.0) rotate(-152)" opacity="0.6"/>
+<path d="M0 0 Q18.5 -10.360000000000001 37 0 Q18.5 10.360000000000001 0 0Z" transform="translate(84.0 100.0) rotate(-28)" opacity="0.75"/>
+<ellipse cx="66" cy="106" rx="6" ry="8" opacity=".85"/>
+<path d="M0 0 Q17.0 -9.520000000000001 34 0 Q17.0 9.520000000000001 0 0Z" transform="translate(83.4 70.0) rotate(-152)" opacity="0.85"/>
+<path d="M0 0 Q15.5 -8.680000000000001 31 0 Q15.5 8.680000000000001 0 0Z" transform="translate(80.9 40.0) rotate(-28)" opacity="0.6"/>
+</svg>

@@ -41,9 +41,18 @@ h1, h2, h3, .site-title, .names {
 .site-title, .names { font-family: var(--font-display); text-wrap: balance; }
 header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-2); gap: var(--space-2); flex-wrap: wrap; max-width: 64rem; margin: 0 auto; }
 header nav { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+/* 44px tall tap targets in the header, so phones hit the right link. */
+header nav a, .tools > a, .tools > button.link { display: inline-flex; align-items: center; min-height: 44px; }
 header nav a { text-decoration: none; color: var(--muted); padding-bottom: 2px; }
 header nav a[aria-current="page"] { color: var(--text); border-bottom: 1.5px solid var(--accent); }
 .tools { display: flex; gap: var(--space-2); align-items: center; }
+.langs { display: flex; gap: 0.1rem; }
+.langs a { display: inline-flex; align-items: center; min-height: 44px; min-width: 2.4rem; justify-content: center; padding: 0 0.3rem;
+  color: var(--text); text-decoration: none; font-size: 0.8rem; letter-spacing: 0.08em; }
+.langs a[aria-current] { color: var(--text); text-decoration: underline; text-underline-offset: 6px; text-decoration-color: var(--accent); }
+.langs a:hover { color: var(--accent); }
+.skip-link { position: absolute; left: var(--space-2); top: -4rem; background: var(--card); color: var(--text); padding: 0.6rem 1rem; border-radius: 8px; z-index: 10; }
+.skip-link:focus { top: var(--space-1); }
 main { max-width: 42rem; margin: 0 auto; padding: var(--space-4) var(--space-2); }
 h1 { font-size: var(--step-4); text-align: center; margin: var(--space-1) 0 var(--space-3); }
 h2 { font-size: var(--step-2); margin-top: 0; }
@@ -54,7 +63,7 @@ input, textarea { width: 100%; margin-bottom: var(--space-2); background: var(--
 input[type="checkbox"], input[type="radio"] { width: auto; margin: 0; }
 select { background: var(--field); color: var(--text); max-width: 100%; }
 button, .btn {
-  background: transparent; color: var(--accent); border: 1.5px solid var(--accent); border-radius: var(--btn-radius);
+  background: var(--bg); color: var(--accent); border: 1.5px solid var(--accent); border-radius: var(--btn-radius);
   cursor: pointer; text-decoration: none; display: inline-block; font: inherit; padding: 0.6rem 1.6rem;
 }
 button:hover, .btn:hover, button[type="submit"] { background: var(--accent); color: var(--on-accent); }
@@ -85,6 +94,7 @@ button.link:hover { background: none; color: var(--accent); }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--space-2); margin-top: var(--space-3); }
 .tiles a { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; text-align: center; text-decoration: none; }
 .tiles a:hover { border-color: var(--accent); }
+.tiles a:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .guest-row { border-top: 1px solid var(--border); padding-top: var(--space-2); margin-top: var(--space-2); }
 .guest-row:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
 .guest-row h3 { margin: 0 0 0.6rem; }
@@ -93,13 +103,26 @@ button.link:hover { background: none; color: var(--accent); }
 /* Site header (guest area): names, then the menu, centered like a printed invitation */
 body > header { display: block; text-align: center; max-width: 52rem; }
 body > header .tools { display: flex; justify-content: flex-end; }
+body > header h1.site-title { margin: 0.6rem 0 var(--space-2); }
+body > header h1.site-title a { color: inherit; text-decoration: none; }
 body > header .site-title { display: block; font-size: calc(clamp(2rem, 6vw, 3rem) * var(--display-scale)); text-decoration: none; color: var(--text); margin: 0.6rem 0 var(--space-2); }
 body > header nav { justify-content: center; font-size: 0.9rem; }
 
 /* Home page */
-.home-hero { text-align: center; display: grid; gap: var(--space-3); justify-items: center; }
-.cover-wrap img { display: block; width: 100%; max-height: 30rem; object-fit: cover; border-radius: calc(var(--radius) / 2); }
-.cover-wrap { width: min(22rem, 100%); }
+.home-hero { text-align: center; display: grid; gap: var(--space-2); justify-items: center; }
+.home-hero .intro p { margin: 0.4rem 0; }
+main:has(.home-hero) { padding-top: var(--space-2); }
+/* Placed photos: the frame keeps its shape while the photo loads (no jump), then the photo fades in. */
+.photo { margin: 0; overflow: hidden; background: var(--tint); width: min(20rem, 40vh, 100%); aspect-ratio: 4 / 5; border-radius: var(--radius); }
+.photo img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 600ms var(--ease, ease); }
+.photo img.loaded { opacity: 1; }
+[data-cover-shape="arch"] .photo { aspect-ratio: 3 / 4; border-radius: 999px 999px var(--radius) var(--radius); }
+[data-cover-shape="circle"] .photo { aspect-ratio: 1; border-radius: 50%; width: min(18rem, 44vh, 100%); }
+[data-cover-shape="wide"] .photo { aspect-ratio: 16 / 9; width: min(100%, 76vh); }
+/* Phones: a smaller cover keeps the message button on the first screen. */
+@media (max-width: 40rem) { .home-hero .photo { width: min(15rem, 32vh, 100%); } [data-cover-shape="wide"] .home-hero .photo { width: 100%; } }
+.page-photo { margin: 0 auto var(--space-4); }
+[data-cover-shape="wide"] .page-photo { aspect-ratio: 21 / 9; }
 .home-hero .date { font-family: var(--font-heading); font-size: var(--step-3); text-transform: var(--heading-case); letter-spacing: var(--heading-tracking); color: var(--text); }
 .home-hero .location { font-family: var(--font-heading); }
 
@@ -158,40 +181,46 @@ html[data-layout="bold"] .hero .date, html[data-layout="bold"] .hero .location,
 html[data-layout="bold"] .hero .countdown, html[data-layout="bold"] .hero .tagline,
 html[data-layout="bold"] .hero header a { color: var(--on-accent); }
 html[data-layout="bold"] .hero .btn { background: var(--on-accent); color: var(--accent); border-color: var(--on-accent); }
-html[data-layout="bold"] .hero select { background: transparent; color: var(--on-accent); border-color: var(--on-accent); }
+html[data-layout="bold"] .hero .langs a[aria-current] { color: var(--on-accent); text-decoration-color: var(--on-accent); }
 html[data-layout="bold"] .home-hero { background-color: var(--accent); color: var(--on-accent); padding: var(--space-4) var(--space-3); border-radius: var(--radius); }
 html[data-layout="bold"] .home-hero .date, html[data-layout="bold"] .home-hero .location,
 html[data-layout="bold"] .home-hero .countdown, html[data-layout="bold"] .home-hero .muted { color: var(--on-accent); }
-html[data-layout="bold"] .home-hero button { color: var(--on-accent); border-color: var(--on-accent); }
-html[data-layout="bold"] .home-hero .cover-wrap { width: 100%; }
-html[data-layout="bold"] .home-hero .cover-wrap img { max-height: 24rem; }
+html[data-layout="bold"] .home-hero button { background: var(--on-accent); color: var(--accent); border-color: var(--on-accent); }
+html[data-layout="bold"] .hero :focus-visible, html[data-layout="bold"] .home-hero :focus-visible { outline-color: var(--on-accent); }
+html[data-layout="bold"] .home-hero .photo { box-shadow: 0 0 0 6px color-mix(in srgb, var(--on-accent) 25%, transparent); }
 
 /* ---------- Art ---------- */
-.ornament { display: none; background: var(--accent-2); -webkit-mask: var(--art) center / contain no-repeat; mask: var(--art) center / contain no-repeat; }
+/* Pictures come from ARTS in /js/designs.js as variables; data-ornament / data-sides / data-scatter say which exist. */
+.ornament { display: none; background: var(--accent-2); -webkit-mask: var(--art-ornament) center / contain no-repeat; mask: var(--art-ornament) center / contain no-repeat; }
+[data-ornament] .ornament { display: block; width: min(16rem, 70vw); aspect-ratio: var(--art-ratio); }
+[data-ornament] dialog .ornament, [data-ornament] .home-hero .ornament { width: min(12rem, 60vw); }
+[data-art="sun"] .ornament { width: 6.5rem; }
 [data-layout="bold"] .hero .ornament, [data-layout="bold"] .home-hero .ornament { background: var(--on-accent); opacity: 0.75; }
+.art-panel .ornament { display: block; width: min(22rem, 60%); aspect-ratio: 1; opacity: 0.85; -webkit-mask-image: var(--art-panel); mask-image: var(--art-panel); }
 
-[data-art="sprig"] .ornament, [data-art="botanical"] .ornament { --art: url("/img/art/sprig.svg"); display: block; width: min(16rem, 70vw); aspect-ratio: 260 / 100; }
-[data-art="sun"] .ornament { --art: url("/img/art/sun.svg"); display: block; width: 6.5rem; aspect-ratio: 1; }
-.art-panel .ornament { width: min(24rem, 70%); }
-[data-art="sun"] .art-panel .ornament { width: min(16rem, 50%); }
-[data-art="none"] .art-panel .ornament, [data-art="arch"] .art-panel .ornament, [data-art="deco"] .art-panel .ornament, [data-art="confetti"] .art-panel .ornament { --art: url("/img/art/sun.svg"); display: block; width: 40%; aspect-ratio: 1; opacity: 0.6; }
-
-/* Botanical: tall branches along both sides on wide screens. */
+/* Sides: tall branches along both sides on wide screens. */
 @media (min-width: 64rem) {
-  [data-art="botanical"] body::before, [data-art="botanical"] body::after {
+  [data-sides] body::before, [data-sides] body::after {
     content: ""; position: fixed; z-index: 1; top: 8vh; width: 11rem; height: 84vh; pointer-events: none; opacity: 0.7;
-    background: var(--accent-2); -webkit-mask: url("/img/art/botanical.svg") center / contain no-repeat; mask: url("/img/art/botanical.svg") center / contain no-repeat;
+    background: var(--accent-2); -webkit-mask: var(--art-sides) center / contain no-repeat; mask: var(--art-sides) center / contain no-repeat;
   }
-  [data-art="botanical"] body::before { left: 1.5rem; }
-  [data-art="botanical"] body::after { right: 1.5rem; transform: scaleX(-1); }
-  [data-layout="framed"][data-art="botanical"] body::before { left: calc(50% - 31rem - 12rem); }
-  [data-layout="framed"][data-art="botanical"] body::after { right: calc(50% - 31rem - 12rem); }
+  [data-sides] body::before { left: 1.5rem; }
+  [data-sides] body::after { right: 1.5rem; transform: scaleX(-1); }
+  [data-layout="framed"][data-sides] body::before { left: max(0.5rem, calc(50% - 31rem - 12rem)); }
+  [data-layout="framed"][data-sides] body::after { right: max(0.5rem, calc(50% - 31rem - 12rem)); }
 }
+
+/* Scatter: a pattern over the landing and home backgrounds (a starry sky). */
+[data-scatter] .hero::before, [data-scatter] .home-hero::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.55; background: var(--accent-2);
+  -webkit-mask: var(--art-scatter) center / 900px auto repeat; mask: var(--art-scatter) center / 900px auto repeat;
+}
+[data-scatter] .home-hero { position: relative; }
+[data-scatter] .home-hero > *, [data-scatter] .hero > * { position: relative; }
 
 /* Arch: names and cover photo framed by an arch. */
 [data-art="arch"] .hero .intro { border: 1.5px solid var(--accent-2); border-radius: 999px 999px 0 0; padding: var(--space-5) var(--space-4) var(--space-4); }
-[data-art="arch"] .cover-wrap img { border-radius: 999px 999px 0 0; }
-[data-art="arch"] .cover-wrap { padding: 0.6rem; border: 1.5px solid var(--accent-2); border-radius: 999px 999px 0 0; }
+[data-art="arch"] .photo { outline: 1.5px solid var(--accent-2); outline-offset: 8px; }
 
 /* Art deco: a fine double rule with a diamond. */
 [data-art="deco"] .ornament { display: block; width: min(14rem, 60vw); height: 14px; -webkit-mask: none; mask: none; position: relative;
@@ -210,4 +239,42 @@ html[data-layout="bold"] .home-hero .cover-wrap img { max-height: 24rem; }
 }
 [data-layout="bold"][data-art="confetti"] .hero, [data-layout="bold"][data-art="confetti"] .home-hero {
   --dot-1: color-mix(in srgb, var(--accent-2) 85%, transparent); --dot-2: color-mix(in srgb, var(--on-accent) 55%, transparent);
+}
+
+/* ---------- Motion ----------
+   One entrance per page per visit (index and home), then everything stands. Hover and press feedback everywhere.
+   Nothing moves on scroll, nothing loops. data-motion comes from the design; .m-enter is set by the head script
+   only on the first view of a page in a visit, and never when the visitor asks for reduced motion. */
+:root { --ease: cubic-bezier(.2, .8, .2, 1); --ease-enter: cubic-bezier(.22, 1, .36, 1); }
+@keyframes m-rise { from { transform: translateY(140%); } }
+@keyframes m-fade-up { from { opacity: 0; transform: translateY(12px); } }
+@keyframes m-settle { from { transform: scale(1.05); } }
+@keyframes m-wipe { from { clip-path: inset(0 50% 0 50%); } to { clip-path: inset(0 0 0 0); } }
+@keyframes m-grow { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes m-develop { from { filter: sepia(0.45) saturate(0.4) blur(6px) brightness(1.08); } }
+
+.names .rise { display: inline-block; }
+.m-enter:not([data-movement="still"]) .names { clip-path: inset(-0.5em -1em -0.3em -1em); }
+.m-enter:not([data-movement="still"]) .names .rise { animation: m-rise 700ms var(--ease-enter) both; }
+.m-enter:not([data-movement="still"]) .intro > :not(.names):not(.ornament) { animation: m-fade-up 520ms var(--ease-enter) both; }
+.m-enter:not([data-movement="still"]) .intro > :nth-child(3) { animation-delay: 380ms; }
+.m-enter:not([data-movement="still"]) .intro > :nth-child(4) { animation-delay: 440ms; }
+.m-enter:not([data-movement="still"]) .intro > :nth-child(5) { animation-delay: 500ms; }
+.m-enter:not([data-movement="still"]) .intro > :nth-child(6) { animation-delay: 560ms; }
+.m-enter:not([data-movement="still"]) .intro > :nth-child(n+7) { animation-delay: 620ms; }
+.m-enter:not([data-movement="still"]) .cover-wrap img.loaded { animation: m-settle 1100ms var(--ease-enter) both; }
+.m-enter[data-movement="lively"] .ornament { animation: m-wipe 900ms var(--ease-enter) both; }
+.m-enter[data-movement="lively"] body::before, .m-enter[data-movement="lively"] body::after { animation: m-grow 1400ms var(--ease-enter) both; }
+.m-enter[data-movement="lively"] .cover-wrap img.loaded { animation: m-settle 1100ms var(--ease-enter) both, m-develop 1700ms var(--ease-enter) both; }
+
+/* Hover and press: every button and tile answers. */
+button, .btn, .tiles a { transition: transform 150ms var(--ease), background-color 150ms var(--ease), color 150ms var(--ease), border-color 150ms var(--ease); }
+button:hover, .btn:hover { transform: translateY(-1px); }
+button:active, .btn:active { transform: translateY(1px) scale(0.985); transition-duration: 90ms; }
+.tiles a:hover { transform: translateY(-2px); }
+button.link:hover, button.link:active { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-property: color, background-color, border-color, opacity !important; }
+  button:hover, .btn:hover, .tiles a:hover, button:active, .btn:active { transform: none; }
 }

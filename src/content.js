@@ -2,7 +2,7 @@
 import { HttpError, json, body, getSetting, setSetting } from "./util.js";
 import { validateSite, validatePage, validateRsvp, validatePhoto, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
 
-const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", location: "", countdown: false, tagline: {}, theme: "sage", palette: "", font: "", layout: "", art: "", accent: "", coverPhoto: 0, meals: [] };
+const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", location: "", countdown: false, tagline: {}, theme: "sage", palette: "", font: "", layout: "", art: "", motion: "", accent: "", coverPhoto: 0, coverShape: "rounded", pagePhotos: {}, photoFocus: {}, meals: [] };
 
 async function loadSite(env) {
   const raw = await getSetting(env, "site");
@@ -72,8 +72,7 @@ const routes = {
     needGuest(role);
     const { results } = await env.DB.prepare("SELECT DISTINCT slug FROM pages WHERE body != ''").all();
     const have = new Set(results.map((r) => r.slug));
-    const hasPhotos = await env.DB.prepare("SELECT 1 AS x FROM photos LIMIT 1").first();
-    return json({ pages: [...PAGE_SLUGS.filter((s) => s !== "welcome" && have.has(s)), ...(hasPhotos ? ["photos"] : [])], role });
+    return json({ pages: PAGE_SLUGS.filter((s) => s !== "welcome" && have.has(s)), role });
   },
   // Text in the requested language, falling back to English unless exact=1 (used by the editor).
   "GET /api/pages": async ({ env, role, url }) => {
@@ -103,9 +102,9 @@ const routes = {
     return json({ ok: true });
   },
 
-  // Photos: bytes in KV, ordered ids in D1. Only logged-in users can fetch them.
+  // Photos: bytes in KV, ordered ids in D1. The library is the couple's; guests only get the photos placed on the site.
   "GET /api/photos": async ({ env, role }) => {
-    needGuest(role);
+    needAdmin(role);
     const { results } = await env.DB.prepare("SELECT id FROM photos ORDER BY id DESC").all();
     return json({ photos: results.map((r) => r.id) });
   },
@@ -127,6 +126,12 @@ const routes = {
     const id = Number((await body(request)).id);
     await env.PHOTOS.delete(`photo:${id}`);
     await env.DB.prepare("DELETE FROM photos WHERE id = ?").bind(id).run();
+    // Take the photo off the site wherever it was placed.
+    const site = await loadSite(env);
+    if (site.coverPhoto === id) site.coverPhoto = 0;
+    for (const [slug, used] of Object.entries(site.pagePhotos)) if (used === id) delete site.pagePhotos[slug];
+    delete site.photoFocus[id];
+    await setSetting(env, "site", JSON.stringify(site));
     return json({ ok: true });
   },
 
@@ -182,8 +187,14 @@ const routes = {
   },
 };
 
+/** Photo ids guests may see: the ones placed on the site. */
+function placedPhotos(site) {
+  return new Set([site.coverPhoto, ...Object.values(site.pagePhotos)].filter(Boolean));
+}
+
 async function servePhoto({ env, role }, id) {
   needGuest(role);
+  if (role !== "admin" && !placedPhotos(await loadSite(env)).has(id)) throw new HttpError(404, "Photo not found");
   const bytes = await env.PHOTOS.get(`photo:${id}`, "stream");
   if (!bytes) throw new HttpError(404, "Photo not found");
   return new Response(bytes, {

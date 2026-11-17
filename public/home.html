@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <title>Wedding</title>
   <link rel="stylesheet" href="/css/site.css">
+  <script>try{if(!sessionStorage.getItem("entered:"+location.pathname)&&!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("m-enter")}catch(e){}</script>
 </head>
 <body>
   <header></header>
   <main>
     <div class="home-hero">
-      <div class="cover-wrap" id="cover-wrap" hidden><img class="cover" id="cover" alt=""></div>
       <div class="intro">
         <div class="ornament" aria-hidden="true"></div>
         <div class="date" id="date"></div>
@@ -33,7 +34,7 @@
   </dialog>
 
   <script type="module">
-    import { init, get, el, t, formatDate, daysUntil, guestHeader, pageHref, paragraphs } from "/js/app.js";
+    import { init, get, el, t, formatDate, daysUntil, guestHeader, pageHref, paragraphs, placedPhoto } from "/js/app.js";
     const site = await init();
     await guestHeader(site);
     const $ = (id) => document.getElementById(id);
@@ -44,8 +45,8 @@
     if (days) $("countdown").textContent = `${days} ${t("home.countdown")}`;
     if (site.rsvpDeadline) $("deadline").textContent = `${t("rsvp.deadline")} ${formatDate(site.rsvpDeadline)}`;
     if (site.coverPhoto) {
-      $("cover").src = `/api/photos/${site.coverPhoto}`;
-      $("cover").onload = () => { $("cover-wrap").hidden = false; document.querySelector(".home-hero").classList.add("has-cover"); };
+      document.querySelector(".home-hero").classList.add("has-cover");
+      document.querySelector(".home-hero").prepend(placedPhoto(site, site.coverPhoto, "cover-wrap"));
     }
 
     const { pages } = await get("/api/nav");

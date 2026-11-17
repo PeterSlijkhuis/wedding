@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
   <title>Wedding admin</title>
   <link rel="stylesheet" href="/css/site.css">
   <link rel="stylesheet" href="/css/admin.css">
@@ -76,13 +77,17 @@
         <div class="layouts" id="layouts"></div>
         <label data-i18n="admin.art"></label>
         <div class="arts" id="arts"></div>
+        <label data-i18n="admin.motion"></label>
+        <div class="arts" id="motions"></div>
         <label for="accent" data-i18n="admin.accent"></label>
         <div class="row-inline">
           <input id="accent" type="color">
           <button type="button" class="link" id="accent-reset" data-i18n-title="tip.accentReset" data-i18n="admin.accentReset"></button>
         </div>
         <label style="margin-top:1.2rem" data-i18n="admin.cover"></label>
-        <div class="gallery" id="cover-picker"></div>
+        <div class="gallery picker" id="cover-picker"></div>
+        <label data-i18n="admin.photoShape"></label>
+        <div class="arts" id="shapes"></div>
       </form>
 
       <form data-view="pages" id="page">
@@ -95,14 +100,20 @@
         <input id="title" maxlength="100">
         <label for="body" data-i18n="admin.pageBody"></label>
         <textarea id="body" rows="12" maxlength="20000"></textarea>
+        <label data-i18n="admin.pagePhoto"></label>
+        <div class="gallery picker" id="page-photo-picker"></div>
       </form>
 
       <section data-view="photos">
         <h2 data-i18n="admin.tile.photos"></h2>
-        <label for="photo-files" data-i18n="admin.photoAdd"></label>
-        <input id="photo-files" type="file" accept="image/*" multiple>
+        <p class="muted" data-i18n="admin.photosPrivate"></p>
+        <label class="dropzone" id="dropzone" for="photo-files">
+          <b data-i18n="admin.dropTitle"></b>
+          <span data-i18n="admin.dropText"></span>
+          <input id="photo-files" type="file" accept="image/*" multiple>
+        </label>
         <p class="status" id="photo-status" role="status"></p>
-        <div class="gallery" id="photos"></div>
+        <div class="library" id="photos"></div>
       </section>
 
       <section data-view="guests">
@@ -157,6 +168,16 @@
     </div>
     <div id="device"><iframe id="preview" title="Preview"></iframe></div>
   </section>
+  <dialog class="focus" id="focus-dialog">
+    <h2 data-i18n="admin.focusTitle"></h2>
+    <p class="muted" data-i18n="admin.focusText"></p>
+    <div class="focus-stage" id="focus-stage" tabindex="0"><img id="focus-img" alt=""><i id="focus-dot"></i></div>
+    <div class="focus-previews" id="focus-previews"></div>
+    <div class="focus-actions">
+      <button type="button" class="ghost" id="focus-cancel" data-i18n="admin.cancel"></button>
+      <button type="button" id="focus-save" data-i18n="admin.save"></button>
+    </div>
+  </dialog>
   <script type="module" src="/admin/admin.js"></script>
 </body>
 </html>

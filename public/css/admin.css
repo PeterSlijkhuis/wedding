@@ -75,10 +75,6 @@ input[type="color"] { width: 4rem; height: 2.4rem; padding: 0.15rem; margin: 0; 
 .schema.bold { grid-template-rows: 2fr 1fr; }
 .arts { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.2rem; }
 .arts .choice span { display: inline-block; border: 1px solid var(--border); border-radius: 999px; padding: 0.2rem 0.8rem; }
-#cover-picker label { position: relative; display: block; margin: 0; }
-#cover-picker input { position: absolute; opacity: 0; width: 1px; }
-#cover-picker .none { display: grid; place-items: center; aspect-ratio: 1; border: 1.5px dashed var(--border); border-radius: 10px; font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0.3rem; }
-#cover-picker label:has(input:checked) img, #cover-picker label:has(input:checked) .none { outline: 3px solid var(--accent); }
 .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; margin-bottom: 1.2rem; }
 .stats div { background: #f7f8f1; border-radius: 14px; padding: 0.8rem; text-align: center; }
 .stats b { display: block; font-size: 1.7rem; font-family: var(--font-heading); font-weight: normal; }
@@ -122,3 +118,50 @@ input[type="color"] { width: 4rem; height: 2.4rem; padding: 0.15rem; margin: 0; 
 #drawer em { font-style: normal; background: #4a4aff; color: #fff; border-radius: 999px; font-size: 0.65rem; padding: 0 0.5rem; }
 #drawer .drawer-foot { margin-top: auto; padding-top: 1.5rem; display: flex; flex-direction: column; }
 #drawer .drawer-foot small { color: var(--muted); }
+
+/* Photo library */
+.dropzone { display: grid; place-items: center; gap: 0.2rem; text-align: center; padding: 1.6rem 1rem; margin: 0 0 0.6rem; cursor: pointer;
+  border: 1.5px dashed var(--border); border-radius: 16px; background: #fafbf6; color: var(--muted); transition: background-color 150ms, border-color 150ms; }
+.dropzone b { color: var(--text); font-weight: 600; }
+.dropzone span { font-size: 0.8rem; }
+.dropzone:hover, .dropzone.over { border-color: var(--accent); background: #f1f4e8; }
+.dropzone:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dropzone input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.library { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: 0.6rem; }
+.library .item { position: relative; margin: 0; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #eef0e4; }
+.library .item img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 400ms, transform 400ms; }
+.library .item img.loaded { opacity: 1; }
+.library .item:hover img { transform: scale(1.03); }
+.library figcaption { position: absolute; left: 0.4rem; top: 0.4rem; display: flex; flex-wrap: wrap; gap: 0.2rem; }
+.library figcaption span { background: #fffe; color: var(--text); border-radius: 999px; padding: 0 0.5rem; font-size: 0.68rem; }
+.library .actions { position: absolute; inset: auto 0 0 0; display: flex; justify-content: center; gap: 0.3rem; padding: 0.4rem;
+  background: linear-gradient(transparent, #0008); opacity: 0; transition: opacity 150ms; }
+.library .item:hover .actions, .library .item:focus-within .actions { opacity: 1; }
+.library .actions .icon { width: 2rem; height: 2rem; padding: 0; border-radius: 50%; border: none; background: #fffe; color: #222; font-size: 0.95rem; line-height: 2rem; }
+.library .actions .icon:hover { background: #fff; color: #000; }
+.library .uploading img { opacity: 0.45; filter: blur(2px); }
+.library .spinner { position: absolute; inset: calc(50% - 0.9rem) auto auto calc(50% - 0.9rem); width: 1.8rem; height: 1.8rem; border-radius: 50%;
+  border: 2.5px solid #fff; border-top-color: var(--accent); animation: spin 0.9s linear infinite; z-index: 1; }
+.library .item:not(.uploading) .spinner { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (hover: none) { .library .actions { opacity: 1; } }
+.picker { grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr)); margin-bottom: 1.2rem; }
+.picker label { position: relative; display: block; margin: 0; cursor: pointer; }
+.picker input { position: absolute; opacity: 0; width: 1px; }
+.picker .none { display: grid; place-items: center; aspect-ratio: 1; border: 1.5px dashed var(--border); border-radius: 10px; font-size: 0.75rem; color: var(--muted); text-align: center; padding: 0.3rem; }
+.picker label:has(input:checked) img, .picker label:has(input:checked) .none { outline: 3px solid var(--accent); outline-offset: 1px; }
+.picker label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 10px; }
+
+/* Focus point dialog */
+dialog.focus { background: #fff; color: var(--text); border-radius: 22px; width: min(46rem, 94vw); padding: 1.5rem; }
+dialog.focus::backdrop { background: #0007; }
+.focus-stage { position: relative; width: fit-content; margin: 0 auto; cursor: crosshair; touch-action: none; border-radius: 10px; overflow: hidden; }
+.focus-stage img { display: block; max-width: 100%; max-height: 50vh; user-select: none; -webkit-user-drag: none; }
+.focus-stage i { position: absolute; width: 1.6rem; height: 1.6rem; margin: -0.8rem 0 0 -0.8rem; border-radius: 50%; border: 2.5px solid #fff; box-shadow: 0 0 0 1.5px #0006, inset 0 0 0 1.5px #0006; pointer-events: none; }
+.focus-previews { display: flex; gap: 0.8rem; justify-content: center; align-items: flex-end; margin: 1rem 0; }
+.focus-previews figure { margin: 0; text-align: center; font-size: 0.75rem; color: var(--muted); }
+.focus-previews img { display: block; object-fit: cover; border-radius: 8px; background: #eef0e4; }
+.focus-previews .portrait img { width: 4.8rem; height: 6rem; }
+.focus-previews .square img { width: 6rem; height: 6rem; }
+.focus-previews .wide img { width: 10.6rem; height: 6rem; }
+.focus-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
