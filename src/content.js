@@ -2,11 +2,13 @@
 import { HttpError, json, body, getSetting, setSetting } from "./util.js";
 import { validateSite, validatePage, validateRsvp, validatePhoto, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
 
-const DEFAULT_SITE = { names: "Our Wedding", date: "", tagline: "", theme: "classic", meals: [] };
+const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", tagline: {}, theme: "classic", meals: [] };
 
 async function loadSite(env) {
   const raw = await getSetting(env, "site");
-  return { ...DEFAULT_SITE, ...(raw ? JSON.parse(raw) : {}) };
+  const site = { ...DEFAULT_SITE, ...(raw ? JSON.parse(raw) : {}) };
+  if (typeof site.tagline === "string") site.tagline = site.tagline ? { en: site.tagline } : {}; // saved before taglines were per language
+  return site;
 }
 
 function need(role, ...allowed) {
@@ -39,8 +41,8 @@ async function loadParties(env, ids = null) {
 const routes = {
   // Public: only what the landing page may show.
   "GET /api/site": async ({ env }) => {
-    const { names, date, tagline, theme } = await loadSite(env);
-    return json({ names, date, tagline, theme });
+    const { names, date, rsvpDeadline, tagline, theme } = await loadSite(env);
+    return json({ names, date, rsvpDeadline, tagline, theme });
   },
   "GET /api/admin/site": async ({ env, role }) => {
     needAdmin(role);
@@ -58,7 +60,7 @@ const routes = {
     const { results } = await env.DB.prepare("SELECT DISTINCT slug FROM pages WHERE body != ''").all();
     const have = new Set(results.map((r) => r.slug));
     const hasPhotos = await env.DB.prepare("SELECT 1 AS x FROM photos LIMIT 1").first();
-    return json({ pages: [...PAGE_SLUGS.filter((s) => have.has(s)), ...(hasPhotos ? ["photos"] : [])] });
+    return json({ pages: [...PAGE_SLUGS.filter((s) => s !== "welcome" && have.has(s)), ...(hasPhotos ? ["photos"] : [])] });
   },
   // Text in the requested language, falling back to English unless exact=1 (used by the editor).
   "GET /api/pages": async ({ env, role, url }) => {

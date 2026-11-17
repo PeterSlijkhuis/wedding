@@ -2,7 +2,7 @@
 import { HttpError } from "./util.js";
 
 export const THEMES = ["classic", "modern", "garden"];
-export const PAGE_SLUGS = ["story", "schedule", "travel", "faq", "gifts"];
+export const PAGE_SLUGS = ["welcome", "story", "schedule", "travel", "faq", "gifts"]; // "welcome" is shown on the home page, not in the menu
 export const LANGS = ["en", "es", "nl", "mk"];
 
 function text(value, max, field) {
@@ -14,15 +14,28 @@ function text(value, max, field) {
 /** Lowercase, accent-free form of a name, used to match what guests type. */
 export const nameKey = (s) => String(s).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim().replace(/\s+/g, " ");
 
+function isoDate(value, field) {
+  const date = text(value, 10, field);
+  if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new HttpError(400, `${field} must look like 2027-06-12`);
+  return date;
+}
+
 export function validateSite(input) {
-  const date = text(input.date, 10, "Date");
-  if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new HttpError(400, "Date must look like 2027-06-12");
+  const date = isoDate(input.date, "Date");
+  const rsvpDeadline = isoDate(input.rsvpDeadline, "RSVP deadline");
+  // Tagline is per language. A plain string (older saved data) counts as English.
+  const rawTagline = typeof input.tagline === "string" ? { en: input.tagline } : input.tagline ?? {};
+  const tagline = {};
+  for (const lang of LANGS) {
+    const line = text(rawTagline[lang], 200, "Tagline");
+    if (line) tagline[lang] = line;
+  }
   const theme = text(input.theme, 20, "Theme") || "classic";
   if (!THEMES.includes(theme)) throw new HttpError(400, `Theme must be one of: ${THEMES.join(", ")}`);
   const rawMeals = Array.isArray(input.meals) ? input.meals : String(input.meals ?? "").split(",");
   const meals = rawMeals.map((m) => text(m, 60, "Meal option")).filter(Boolean);
   if (meals.length > 10) throw new HttpError(400, "At most 10 meal options");
-  return { names: text(input.names, 100, "Names"), date, tagline: text(input.tagline, 200, "Tagline"), theme, meals };
+  return { names: text(input.names, 100, "Names"), date, rsvpDeadline, tagline, theme, meals };
 }
 
 export function validatePage(input) {

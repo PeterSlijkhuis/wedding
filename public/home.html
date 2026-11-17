@@ -11,15 +11,19 @@
   <main>
     <h1 id="names"></h1>
     <p class="muted" style="text-align:center" id="date"></p>
-    <p style="text-align:center" data-i18n="home.hello"></p>
+    <div style="text-align:center" id="welcome"></div>
+    <p class="muted" style="text-align:center" id="deadline"></p>
     <div class="tiles" id="tiles"></div>
   </main>
   <script type="module">
-    import { init, get, el, t, formatDate, guestHeader, pageHref } from "/js/app.js";
+    import { init, get, el, t, formatDate, guestHeader, pageHref, paragraphs } from "/js/app.js";
     const site = await init();
     await guestHeader();
     document.getElementById("names").textContent = site.names;
     document.getElementById("date").textContent = formatDate(site.date);
+    const welcome = await get(`/api/pages?slug=welcome&lang=${document.documentElement.lang}`);
+    document.getElementById("welcome").replaceChildren(...(welcome.body ? paragraphs(welcome.body) : [el("p", {}, t("home.hello"))]));
+    if (site.rsvpDeadline) document.getElementById("deadline").textContent = `${t("rsvp.deadline")} ${formatDate(site.rsvpDeadline)}`;
     const { pages } = await get("/api/nav");
     document.getElementById("tiles").replaceChildren(
       ...pages.map((s) => el("a", { href: pageHref(s) }, t(`page.${s}`))),

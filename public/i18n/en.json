@@ -43,7 +43,7 @@
   "admin.site": "Site details",
   "admin.names": "Names (for example Anna & Marko)",
   "admin.date": "Wedding date",
-  "admin.tagline": "Tagline (optional)",
+  "admin.tagline": "Greeting under the names, per language (optional; the landing page shows every one you fill in)",
   "admin.theme": "Theme",
   "admin.meals": "Meal options, separated by commas (empty hides the choice)",
   "admin.pages": "Page texts",
@@ -64,5 +64,8 @@
   "admin.photoAdd": "Add photos. They are resized on your device first, and only people with the guest password can see them.",
   "admin.uploading": "Uploading",
   "admin.photoFailed": "Could not upload:",
-  "admin.noPhotos": "No photos yet."
+  "admin.noPhotos": "No photos yet.",
+  "page.welcome": "Home page welcome message",
+  "rsvp.deadline": "Please reply by",
+  "admin.deadline": "RSVP deadline (optional)"
 }

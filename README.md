@@ -15,9 +15,9 @@ npm run dev                           # open http://localhost:8787
 
 Log in with the admin password (`change-me` locally). In `/admin/` you can:
 
-- set names, date, tagline, theme (Classic, Modern, Garden) and meal options
+- set names, date, RSVP deadline, a greeting per language (the landing page shows all of them), theme (Classic, Modern, Garden) and meal options
 - set the guest password you share with your guests
-- write the text pages (Our story, Schedule, Travel, FAQ, Gifts) per language; a page with no text stays hidden
+- write the home page welcome message and the text pages (Our story, Schedule, Travel, FAQ, Gifts) per language; a page with no text stays hidden
 - upload photos (resized on your device, stored in free Cloudflare KV, visible only to people with the guest password)
 - add guest groups (one invitation per group) and see who replied
 

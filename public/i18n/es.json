@@ -43,7 +43,7 @@
   "admin.site": "Datos del sitio",
   "admin.names": "Nombres (por ejemplo Ana y Marco)",
   "admin.date": "Fecha de la boda",
-  "admin.tagline": "Lema (opcional)",
+  "admin.tagline": "Saludo bajo los nombres, por idioma (opcional; la página de inicio muestra todos los que rellenes)",
   "admin.theme": "Tema",
   "admin.meals": "Opciones de menú, separadas por comas (vacío oculta la opción)",
   "admin.pages": "Textos de las páginas",
@@ -64,5 +64,8 @@
   "admin.photoAdd": "Añade fotos. Se reducen en tu dispositivo antes de subirlas y solo las ven quienes tengan la contraseña de invitados.",
   "admin.uploading": "Subiendo",
   "admin.photoFailed": "No se pudo subir:",
-  "admin.noPhotos": "Aún no hay fotos."
+  "admin.noPhotos": "Aún no hay fotos.",
+  "page.welcome": "Mensaje de bienvenida de la página de inicio",
+  "rsvp.deadline": "Por favor, responde antes del",
+  "admin.deadline": "Fecha límite para confirmar (opcional)"
 }

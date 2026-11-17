@@ -1,6 +1,6 @@
 import { init, get, post, upload, t, el, logout, LANGUAGES } from "/js/app.js";
 
-const PAGE_SLUGS = ["story", "schedule", "travel", "faq", "gifts"]; // keep in sync with src/validate.js
+const PAGE_SLUGS = ["welcome", "story", "schedule", "travel", "faq", "gifts"]; // keep in sync with src/validate.js
 const $ = (id) => document.getElementById(id);
 
 await init();
@@ -27,12 +27,14 @@ function bindForm(id, run, doneKey = "admin.savedGeneric") {
 const site = await get("/api/admin/site");
 $("names").value = site.names;
 $("date").value = site.date;
-$("tagline").value = site.tagline;
+$("deadline").value = site.rsvpDeadline;
+for (const lang of Object.keys(LANGUAGES)) $(`tagline-${lang}`).value = site.tagline[lang] ?? "";
 $("theme").value = site.theme;
 $("meals").value = site.meals.join(", ");
 bindForm("site", async () => {
   await post("/api/admin/site", {
-    names: $("names").value, date: $("date").value, tagline: $("tagline").value, theme: $("theme").value, meals: $("meals").value,
+    names: $("names").value, date: $("date").value, rsvpDeadline: $("deadline").value, theme: $("theme").value, meals: $("meals").value,
+    tagline: Object.fromEntries(Object.keys(LANGUAGES).map((lang) => [lang, $(`tagline-${lang}`).value])),
   });
   document.documentElement.dataset.theme = $("theme").value;
 });

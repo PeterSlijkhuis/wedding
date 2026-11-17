@@ -12,6 +12,7 @@
     <h1 data-i18n="rsvp.title"></h1>
     <form class="card" id="search">
       <p data-i18n="rsvp.intro"></p>
+      <p class="muted" id="deadline"></p>
       <input id="q" autocomplete="off" required data-i18n-placeholder="rsvp.search">
       <button type="submit" data-i18n="rsvp.find"></button>
       <p class="error" id="search-error" role="alert"></p>
@@ -27,11 +28,12 @@
     </form>
   </main>
   <script type="module">
-    import { init, get, post, el, t, guestHeader } from "/js/app.js";
-    await init();
+    import { init, get, post, el, t, formatDate, guestHeader } from "/js/app.js";
+    const site = await init();
     await guestHeader();
 
     const $ = (id) => document.getElementById(id);
+    if (site.rsvpDeadline) $("deadline").textContent = `${t("rsvp.deadline")} ${formatDate(site.rsvpDeadline)}`;
     let meals = [];
     let party = null;
 

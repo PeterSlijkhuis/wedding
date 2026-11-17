@@ -13,6 +13,10 @@ test("validateSite", () => {
   const ok = validateSite({ names: "A & B", date: "2027-06-12", theme: "garden", meals: " Beef, Fish ,," });
   assert.deepEqual(ok.meals, ["Beef", "Fish"]);
   assert.equal(validateSite({}).theme, "classic");
+  assert.deepEqual(validateSite({ tagline: { en: "Hi", es: " Hola ", nl: "", fr: "x" } }).tagline, { en: "Hi", es: "Hola" });
+  assert.deepEqual(validateSite({ tagline: "Old text" }).tagline, { en: "Old text" }); // saved before taglines were per language
+  assert.equal(validateSite({ rsvpDeadline: "2026-12-20" }).rsvpDeadline, "2026-12-20");
+  rejects(() => validateSite({ rsvpDeadline: "soon" }), /RSVP deadline/);
   rejects(() => validateSite({ date: "12/06/2027" }), /Date/);
   rejects(() => validateSite({ theme: "neon" }), /Theme/);
 });

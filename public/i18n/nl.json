@@ -43,7 +43,7 @@
   "admin.site": "Sitegegevens",
   "admin.names": "Namen (bijvoorbeeld Anna & Marko)",
   "admin.date": "Trouwdatum",
-  "admin.tagline": "Slogan (optioneel)",
+  "admin.tagline": "Begroeting onder de namen, per taal (optioneel; de startpagina toont alles wat je invult)",
   "admin.theme": "Thema",
   "admin.meals": "Maaltijdopties, gescheiden door komma's (leeg verbergt de keuze)",
   "admin.pages": "Paginateksten",
@@ -64,5 +64,8 @@
   "admin.photoAdd": "Foto's toevoegen. Ze worden eerst op je apparaat verkleind en alleen mensen met het gastenwachtwoord kunnen ze zien.",
   "admin.uploading": "Uploaden",
   "admin.photoFailed": "Uploaden mislukt:",
-  "admin.noPhotos": "Nog geen foto's."
+  "admin.noPhotos": "Nog geen foto's.",
+  "page.welcome": "Welkomstbericht op de homepagina",
+  "rsvp.deadline": "Reageer graag vóór",
+  "admin.deadline": "Uiterste reactiedatum (optioneel)"
 }
