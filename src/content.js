@@ -1,11 +1,11 @@
 // API handlers for site details, text pages, RSVP and the guest list.
 import { HttpError, json, body, getSetting, setSetting } from "./util.js";
 import { invitationEmail, sendBatch, verifyWebhook, nextStatus, MAX_PER_SEND } from "./email.js";
-import { PALETTES, FONTS, resolveDesign } from "../public/js/designs.js";
+import { FONTS, resolveDesign, colors } from "../public/js/designs.js";
 import { safeEqual } from "./auth.js";
 import { validateSite, validatePage, validateRsvp, validatePhoto, validateGuest, csvGuests, validateInvite, validateSignup, email, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
 
-const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", location: "", siteUrl: "", countdown: false, tagline: {}, theme: "sage", palette: "", font: "", layout: "", art: "", motion: "", accent: "", coverPhoto: 0, coverShape: "rounded", pagePhotos: {}, photoFocus: {}, meals: [] };
+const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", location: "", siteUrl: "", countdown: false, tagline: {}, theme: "sage", palette: "", font: "", layout: "", art: "", motion: "", buttons: "", cards: "", texture: "", textSize: "", artSize: "", accent: "", bg: "", accent2: "", coverPhoto: 0, coverShape: "rounded", pagePhotos: {}, photoFocus: {}, meals: [] };
 
 async function loadSite(env) {
   const raw = await getSetting(env, "site");
@@ -49,8 +49,9 @@ async function loadParties(env, ids = null, withEmails = false) {
 /** The site's colors and fonts for emails. */
 function emailDesign(site) {
   const d = resolveDesign(site);
-  const p = PALETTES[d.palette], f = FONTS[d.font];
-  return { bg: p.bg, card: p.card, text: p.text, muted: p.muted, accent: site.accent || p.accent, onAccent: p.onAccent, display: f.display, body: f.body };
+  const p = colors(site, d.palette), f = FONTS[d.font];
+  const card = site.bg ? site.bg : p.card; // email clients do not know color-mix
+  return { bg: p.bg, card, text: p.text, muted: p.muted, accent: p.accent, onAccent: p.onAccent, display: f.display, body: f.body };
 }
 
 const EMAIL_SETTINGS = { from: "", replyTo: "", drafts: {} };

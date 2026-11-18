@@ -1,6 +1,6 @@
 // Pure input validation, no I/O. Every function throws HttpError(400) on bad input.
 import { HttpError } from "./util.js";
-import { TEMPLATES, PALETTES, FONTS, LAYOUTS, ARTS, MOTIONS } from "../public/js/designs.js";
+import { TEMPLATES, PALETTES, FONTS, LAYOUTS, ARTS, MOTIONS, STYLES } from "../public/js/designs.js";
 
 export const THEMES = Object.keys(TEMPLATES);
 export const PAGE_SLUGS = ["welcome", "story", "schedule", "travel", "faq", "gifts"]; // "welcome" is shown on the home page, not in the menu
@@ -25,8 +25,14 @@ function isoDate(value, field) {
 export function validateSite(input) {
   const date = isoDate(input.date, "Date");
   const rsvpDeadline = isoDate(input.rsvpDeadline, "RSVP deadline");
-  const accent = text(input.accent, 7, "Accent color");
-  if (accent && !/^#[0-9a-fA-F]{6}$/.test(accent)) throw new HttpError(400, "Accent color must look like #6b7355");
+  const color = (key, label) => {
+    const value = text(input[key], 7, label);
+    if (value && !/^#[0-9a-fA-F]{6}$/.test(value)) throw new HttpError(400, `${label} must look like #6b7355`);
+    return value;
+  };
+  const accent = color("accent", "Accent color");
+  const bg = color("bg", "Background color");
+  const accent2 = color("accent2", "Second color");
   // Tagline is per language. A plain string (older saved data) counts as English.
   const rawTagline = typeof input.tagline === "string" ? { en: input.tagline } : input.tagline ?? {};
   const tagline = {};
@@ -43,6 +49,11 @@ export function validateSite(input) {
     return value;
   };
   const design = { palette: part("palette", PALETTES), font: part("font", FONTS), layout: part("layout", LAYOUTS), art: part("art", ARTS), motion: part("motion", MOTIONS) };
+  for (const [key, values] of Object.entries(STYLES)) {
+    const value = text(input[key], 10, key);
+    if (value && !values.includes(value)) throw new HttpError(400, `${key} must be one of: ${values.join(", ")}`);
+    design[key] = value;
+  }
   const rawMeals = Array.isArray(input.meals) ? input.meals : String(input.meals ?? "").split(",");
   const meals = rawMeals.map((m) => text(m, 60, "Meal option")).filter(Boolean);
   if (meals.length > 10) throw new HttpError(400, "At most 10 meal options");
@@ -78,7 +89,7 @@ export function validateSite(input) {
   }
   return {
     names: text(input.names, 100, "Names"), date, location: text(input.location, 200, "Location"), rsvpDeadline, siteUrl,
-    countdown: input.countdown === true, tagline, theme, ...design, accent, coverPhoto, coverShape, pagePhotos, photoFocus, meals,
+    countdown: input.countdown === true, tagline, theme, ...design, accent, bg, accent2, coverPhoto, coverShape, pagePhotos, photoFocus, meals,
   };
 }
 

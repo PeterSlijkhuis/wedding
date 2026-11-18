@@ -48,14 +48,6 @@ input[type="color"] { width: 4rem; height: 2.4rem; padding: 0.15rem; margin: 0; 
 .mini b { font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; line-height: 1.1; }
 .mini small { font-family: var(--font); font-size: 0.55rem; letter-spacing: 0.1em; color: var(--muted); }
 .mini i { width: 2.4rem; height: 0.5rem; border-radius: 99px; background: var(--accent); margin-top: 0.2rem; }
-.mini .art { width: 3rem; height: 1rem; }
-.mini[data-art="sprig"] .art, .mini[data-art="botanical"] .art { background: var(--accent-2); -webkit-mask: url("/img/art/sprig.svg") center / contain no-repeat; mask: url("/img/art/sprig.svg") center / contain no-repeat; }
-.mini[data-art="sun"] .art { background: var(--accent-2); -webkit-mask: url("/img/art/sun.svg") center / contain no-repeat; mask: url("/img/art/sun.svg") center / contain no-repeat; }
-.mini[data-art="deco"] .art { height: 1px; background: var(--accent-2); box-shadow: 0 3px 0 var(--accent-2); }
-.mini[data-art="botanical"]::before, .mini[data-art="botanical"]::after { content: ""; position: absolute; top: 10%; width: 14%; height: 80%; background: var(--accent-2); opacity: 0.7;
-  -webkit-mask: url("/img/art/botanical.svg") center / contain no-repeat; mask: url("/img/art/botanical.svg") center / contain no-repeat; }
-.mini[data-art="botanical"]::before { left: 3%; }
-.mini[data-art="botanical"]::after { right: 3%; transform: scaleX(-1); }
 .mini[data-art="arch"]::before { content: ""; position: absolute; inset: 12% 24% 0; border: 1px solid var(--accent-2); border-bottom: none; border-radius: 999px 999px 0 0; }
 .mini[data-art="confetti"] { background-image: radial-gradient(circle at 12% 20%, var(--accent-2) 0 4px, transparent 5px), radial-gradient(circle at 88% 25%, var(--accent) 0 3px, transparent 4px), radial-gradient(circle at 80% 82%, var(--accent-2) 0 5px, transparent 6px), radial-gradient(circle at 18% 78%, var(--accent) 0 2px, transparent 3px); }
 .mini[data-layout="bold"] { background-color: var(--accent); color: var(--on-accent); }
@@ -64,7 +56,7 @@ input[type="color"] { width: 4rem; height: 2.4rem; padding: 0.15rem; margin: 0; 
 .mini[data-layout="bold"] b { font-size: 1.3rem; }
 .mini[data-layout="framed"] { box-shadow: inset 0 0 0 6px color-mix(in srgb, var(--accent-2) 30%, var(--bg)), inset 0 0 0 7px var(--accent-2); }
 .mini[data-layout="split"] { padding-left: 45%; background-image: linear-gradient(90deg, color-mix(in srgb, var(--accent-2) 55%, var(--bg)) 40%, transparent 40%); }
-.choice:has(input:checked) .mini, .choice:has(input:checked) .dots, .choice:has(input:checked) .sample, .choice:has(input:checked) .schema,
+.choice:has(input:checked) .mini, .choice:has(input:checked) .art-sample, .choice:has(input:checked) .dots, .choice:has(input:checked) .sample, .choice:has(input:checked) .schema,
 .arts .choice:has(input:checked) span { outline: 2.5px solid var(--accent); outline-offset: 2px; }
 .swatches, .fonts, .layouts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem 0.5rem; margin-bottom: 1.2rem; text-align: center; }
 .swatches .dots { display: flex; justify-content: center; gap: 2px; padding: 0.35rem; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 0.2rem; }
@@ -205,3 +197,32 @@ dialog.guest { max-height: 92vh; }
 .signup-panel .row-inline { flex-wrap: wrap; gap: 0.5rem; }
 .guest-table .emails { display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; }
 .small-pill { margin-left: 0.4rem; font-size: 0.72rem; padding: 0 0.5rem; vertical-align: 1px; }
+
+/* Design editor: one folding section per kind of choice. */
+#design details.group { border-top: 1px solid var(--border); padding: 0.2rem 0; }
+#design details.group:last-of-type { border-bottom: 1px solid var(--border); }
+#design details.group > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 0.2rem; font-weight: 600; }
+#design details.group > summary::-webkit-details-marker { display: none; }
+#design details.group > summary::after { content: ""; width: 0.5rem; height: 0.5rem; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); transition: transform 150ms; margin-right: 0.3rem; }
+#design details.group[open] > summary::after { transform: rotate(-135deg); }
+#design details.group[open] { padding-bottom: 1rem; }
+#design details.group > label { margin-top: 1rem; }
+/* Artwork in previews: same tone classes as the site. */
+.mini { --art-leaf: var(--accent-2); --art-deep: color-mix(in srgb, var(--accent) 85%, var(--accent-2)); --art-light: color-mix(in srgb, var(--accent-2) 45%, var(--bg)); }
+svg.art { display: block; width: 100%; height: 100%; overflow: visible; }
+svg.art .l { fill: var(--art-leaf); } svg.art .d { fill: var(--art-deep); } svg.art .t { fill: var(--art-light); }
+svg.art .s, svg.art .ls { stroke: var(--art-leaf); fill: none; } svg.art .ds { stroke: var(--art-deep); fill: none; } svg.art .ts { stroke: var(--art-light); fill: none; }
+.mini .corner { position: absolute; width: 38%; aspect-ratio: 1; pointer-events: none; }
+.mini .corner.tl { top: 0; left: 0; } .mini .corner.br { bottom: 0; right: 0; transform: rotate(180deg); }
+.mini b, .mini small, .mini i { position: relative; }
+.mini[data-layout="bold"] { --art-leaf: color-mix(in srgb, var(--on-accent) 70%, var(--accent)); --art-deep: var(--on-accent); --art-light: color-mix(in srgb, var(--on-accent) 35%, var(--accent)); }
+.art-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr)); gap: 0.6rem; --art-leaf: #a3b88f; --art-deep: #6e5c46; --art-light: #dce5d2; }
+.art-picks .choice { display: grid; gap: 0.3rem; text-align: center; }
+.art-sample { display: block; height: 3rem; padding: 0.4rem; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+.art-sample.css.none { background: repeating-linear-gradient(45deg, #fff 0 6px, #f3f3f3 6px 7px); }
+.art-sample.css.arch::before { content: ""; display: block; margin: 0 auto; width: 40%; height: 100%; border: 1.5px solid var(--art-leaf); border-bottom: none; border-radius: 99px 99px 0 0; }
+.art-sample.css.confetti { background-image: radial-gradient(circle at 20% 30%, var(--art-leaf) 0 5px, transparent 6px), radial-gradient(circle at 70% 60%, var(--art-deep) 0 3px, transparent 4px), radial-gradient(circle at 85% 25%, var(--art-leaf) 0 4px, transparent 5px), radial-gradient(circle at 40% 75%, var(--art-deep) 0 2px, transparent 3px); }
+.own-colors { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
+.own-colors label { margin-top: 0; font-size: 0.85rem; }
+.own-colors input[type="color"] { width: 4rem; height: 2.4rem; padding: 0.15rem; }
+.warn { background: #fff4d6; color: #5c4400; border-radius: 8px; padding: 0.5rem 0.8rem; font-size: 0.85rem; }

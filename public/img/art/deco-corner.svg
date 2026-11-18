@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="art" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+<path class="ds" d="M26 400 V66 L66 26 H400" fill="none" stroke-width="2" opacity="1"/>
+<path class="ds" d="M42 400 V82 L82 42 H400" fill="none" stroke-width="1.2" opacity="0.7"/>
+<path class="ds" d="M58 400 V98 L98 58 H400" fill="none" stroke-width="1.2" opacity="0.45"/>
+<path class="ls" d="M0 0 L120 0" stroke-width="1.4" opacity="0.8"/>
+<path class="ls" d="M0 0 L117.7 23.4" stroke-width="1.4" opacity="0.8"/>
+<path class="ls" d="M0 0 L110.9 45.9" stroke-width="1.4" opacity="0.8"/>
+<path class="ls" d="M0 0 L99.8 66.7" stroke-width="1.4" opacity="0.8"/>
+<path class="ls" d="M0 0 L84.9 84.9" stroke-width="1.4" opacity="0.8"/>
+<path class="ls" d="M0 0 L66.7 99.8" stroke-width="1.4" opacity="0.8"/>
+<path class="ls" d="M0 0 L45.9 110.9" stroke-width="1.4" opacity="0.8"/>
+<path class="ls" d="M0 0 L23.4 117.7" stroke-width="1.4" opacity="0.8"/>
+<path class="ls" d="M0 0 L0 120" stroke-width="1.4" opacity="0.8"/>
+<path class="ds" d="M120 0 A120 120 0 0 1 0 120" fill="none" stroke-width="2"/>
+<path class="l" d="M0 0 H70 A70 70 0 0 1 0 70Z" opacity="0.5"/>
+<path class="d" d="M152 68 l8 -8 l8 8 l-8 8z M68 152 l8 -8 l8 8 l-8 8z"/>
+</svg>

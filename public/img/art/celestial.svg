@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="art" viewBox="0 0 300 100" aria-hidden="true" focusable="false">
+<path class="ts" d="M40 52 H112 M188 52 H260" stroke-width="1.2" stroke-dasharray="2 6" stroke-linecap="round"/>
+<path class="d" d="M146 22 A30 30 0 1 0 172 70 A24 24 0 1 1 146 22Z"/>
+<path class="d" d="M186 21 Q187.8 28.2 195 30 Q187.8 31.8 186 39 Q184.2 31.8 177 30 Q184.2 28.2 186 21Z"/>
+<path class="l" d="M118 65 Q119.4 70.6 125 72 Q119.4 73.4 118 79 Q116.6 73.4 111 72 Q116.6 70.6 118 65Z"/>
+<path class="l" d="M100 25 Q101 29 105 30 Q101 31 100 35 Q99 31 95 30 Q99 29 100 25Z"/>
+<path class="l" d="M205 67 Q206 71 210 72 Q206 73 205 77 Q204 73 200 72 Q204 71 205 67Z"/>
+</svg>

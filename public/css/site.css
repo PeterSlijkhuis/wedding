@@ -178,7 +178,7 @@ html[data-layout="framed"] { --radius: 6px; --btn-radius: 4px; }
 html[data-layout="split"] { --radius: 10px; --btn-radius: 10px; }
 @media (min-width: 52rem) {
   html[data-layout="split"] .hero .center { display: grid; grid-template-columns: 1fr 1fr; padding: 0; align-items: stretch; }
-  html[data-layout="split"] .art-panel { display: grid; place-items: center; background: color-mix(in srgb, var(--accent-2) 45%, var(--bg)); min-height: 70vh; }
+  html[data-layout="split"] .art-panel { display: grid; place-items: center; background: var(--tint); min-height: 70vh; }
   html[data-layout="split"] .intro { align-self: center; justify-self: center; padding: var(--space-4); }
   html[data-layout="split"] .hero .intro > .ornament { display: none; } /* the art panel already shows it */
   html[data-layout="split"] .hero header { position: absolute; top: 0; right: 0; z-index: 2; }
@@ -190,7 +190,7 @@ html[data-layout="split"] { --radius: 10px; --btn-radius: 10px; }
 
 /* Bold banner: strong color field, big names. */
 html[data-layout="bold"] { --radius: 4px; --btn-radius: 2px; }
-html[data-layout="bold"] .hero { background-color: var(--accent); color: var(--on-accent); }
+html[data-layout="bold"] .hero { color: var(--on-accent); } /* its color is on the page, see Art */
 html[data-layout="bold"] .hero .names { font-size: calc(clamp(3rem, 13vw, 8rem) * var(--display-scale)); }
 html[data-layout="bold"] .hero .date, html[data-layout="bold"] .hero .location,
 html[data-layout="bold"] .hero .countdown, html[data-layout="bold"] .hero .tagline,
@@ -210,42 +210,52 @@ html[data-layout="bold"] .hero :focus-visible, html[data-layout="bold"] .home-he
 html[data-layout="bold"] .home-hero .photo { box-shadow: 0 0 0 6px color-mix(in srgb, var(--on-accent) 25%, transparent); }
 
 /* ---------- Art ---------- */
-/* Pictures come from ARTS in /js/designs.js as variables; data-ornament / data-sides / data-scatter say which exist. */
-.ornament { display: none; background: var(--accent-2); -webkit-mask: var(--art-ornament) center / contain no-repeat; mask: var(--art-ornament) center / contain no-repeat; }
-[data-ornament] .ornament { display: block; width: min(16rem, 70vw); aspect-ratio: var(--art-ratio); }
-[data-ornament] dialog .ornament, [data-ornament] .home-hero .ornament { width: min(12rem, 60vw); }
-[data-art="sun"] .ornament { width: 6.5rem; }
-[data-layout="bold"] .hero .ornament, [data-layout="bold"] .home-hero .ornament { background: var(--on-accent); opacity: 0.75; }
-.art-panel .ornament { display: block; width: min(22rem, 60%); aspect-ratio: 1; opacity: 0.85; -webkit-mask-image: var(--art-panel); mask-image: var(--art-panel); }
-
-/* Sides: tall branches along both sides on wide screens. */
-@media (min-width: 64rem) {
-  [data-sides] body::before, [data-sides] body::after {
-    content: ""; position: fixed; z-index: 1; top: 8vh; width: 11rem; height: 84vh; pointer-events: none; opacity: 0.7;
-    background: var(--accent-2); -webkit-mask: var(--art-sides) center / contain no-repeat; mask: var(--art-sides) center / contain no-repeat;
-  }
-  [data-sides] body::before { left: 1.5rem; }
-  [data-sides] body::after { right: 1.5rem; transform: scaleX(-1); }
-  [data-layout="framed"][data-sides] body::before { left: max(0.5rem, calc(50% - 31rem - 12rem)); }
-  [data-layout="framed"][data-sides] body::after { right: max(0.5rem, calc(50% - 31rem - 12rem)); }
+/* Artwork is inline SVG from /img/art/ (put in by applyDesign). Its shapes carry tone classes, painted here from the palette. */
+:root {
+  --art-leaf: var(--accent-2);
+  --art-deep: color-mix(in srgb, var(--accent) 85%, var(--accent-2));
+  --art-light: color-mix(in srgb, var(--accent-2) 45%, var(--bg));
+  --art-scale: 1;
 }
+[data-art-size="s"] { --art-scale: 0.72; }
+[data-art-size="l"] { --art-scale: 1.32; }
+svg.art { display: block; width: 100%; height: 100%; overflow: visible; }
+svg.art .l { fill: var(--art-leaf); } svg.art .d { fill: var(--art-deep); } svg.art .t { fill: var(--art-light); }
+svg.art .s, svg.art .ls { stroke: var(--art-leaf); fill: none; } svg.art .ds { stroke: var(--art-deep); fill: none; } svg.art .ts { stroke: var(--art-light); fill: none; }
 
-/* Scatter: a pattern over the landing and home backgrounds (a starry sky). */
-[data-scatter] .hero::before, [data-scatter] .home-hero::before {
-  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.55; background: var(--accent-2);
-  -webkit-mask: var(--art-scatter) center / 900px auto repeat; mask: var(--art-scatter) center / 900px auto repeat;
-}
-[data-scatter] .home-hero { position: relative; }
-[data-scatter] .home-hero > *, [data-scatter] .hero > * { position: relative; }
+.ornament { display: none; }
+[data-ornament] .ornament { display: block; width: calc(min(17rem, 72vw) * var(--art-scale)); aspect-ratio: 3; margin-inline: auto; }
+[data-ornament] dialog .ornament, [data-ornament] .home-hero .ornament { width: calc(min(13rem, 60vw) * var(--art-scale)); }
+/* On a bold banner the ornament turns light, like the text on it. */
+[data-layout="bold"] :is(.hero, .home-hero) { --art-leaf: color-mix(in srgb, var(--on-accent) 80%, var(--accent)); --art-deep: var(--on-accent); --art-light: color-mix(in srgb, var(--on-accent) 45%, var(--accent)); }
+
+/* Corners: one arrangement in the top left of the page, the same turned round in the bottom right. Drawn first, so every
+   other part of the page (made a positioned box here, without outranking any position set elsewhere) sits on top. */
+body { position: relative; min-height: 100vh; }
+:where(body > :not(.art-corner)) { position: relative; }
+/* The landing hero lets the corners show through: its color moves to the page. */
+.hero { background: transparent; }
+body:has(> .hero) { background-color: var(--tint); }
+html[data-layout="framed"] body:has(> .hero) { background-color: var(--bg); }
+html[data-layout="bold"] body:has(> .hero) { background-color: var(--accent);
+  --art-leaf: color-mix(in srgb, var(--on-accent) 70%, var(--accent)); --art-deep: var(--on-accent); --art-light: color-mix(in srgb, var(--on-accent) 35%, var(--accent)); }
+.art-corner { position: absolute; pointer-events: none; width: calc(clamp(8rem, 26vw, 24rem) * var(--art-scale)); aspect-ratio: 1; }
+.art-corner.tl { top: 0; left: 0; }
+.art-corner.br { bottom: 0; right: 0; transform: rotate(180deg); }
+@media (max-width: 40rem) { .art-corner { width: calc(9rem * var(--art-scale)); opacity: 0.8; } }
+/* Text pages: smaller and fainter so the words come first. */
+body:not(:has(.hero, .home-hero)) > .art-corner { width: calc(clamp(7rem, 16vw, 14rem) * var(--art-scale)); opacity: 0.85; }
+/* Split layout: the panel carries the art, so the page corners step back. */
+.art-panel { position: relative; overflow: hidden; }
+.art-panel .art-corner { width: 58%; }
+.art-panel .ornament { display: block; position: relative; width: min(20rem, 70%); aspect-ratio: 3; }
+@media (min-width: 52rem) { [data-layout="split"] body:has(.art-panel) > .art-corner { display: none; } }
 
 /* Arch: names and cover photo framed by an arch. */
 [data-art="arch"] .hero .intro { border: 1.5px solid var(--accent-2); border-radius: 999px 999px 0 0; padding: var(--space-5) var(--space-4) var(--space-4); }
 [data-art="arch"] .photo { outline: 1.5px solid var(--accent-2); outline-offset: 8px; }
 
 /* Art deco: a fine double rule with a diamond. */
-[data-art="deco"] .ornament { display: block; width: min(14rem, 60vw); height: 14px; -webkit-mask: none; mask: none; position: relative;
-  background: linear-gradient(var(--accent-2), var(--accent-2)) center 4px / 100% 1px no-repeat, linear-gradient(var(--accent-2), var(--accent-2)) center 9px / 70% 1px no-repeat; }
-[data-art="deco"] .ornament::after { content: ""; position: absolute; left: calc(50% - 6px); top: 1px; width: 12px; height: 12px; transform: rotate(45deg); background: var(--bg); border: 1px solid var(--accent-2); }
 [data-art="deco"] .hero .intro { padding: var(--space-4); border-top: 1px solid var(--accent-2); border-bottom: 1px solid var(--accent-2); }
 
 /* Confetti: scattered dots in both palette colors (light colors on a bold banner). */
@@ -270,7 +280,8 @@ html[data-layout="bold"] .home-hero .photo { box-shadow: 0 0 0 6px color-mix(in 
 @keyframes m-fade-up { from { opacity: 0; transform: translateY(12px); } }
 @keyframes m-settle { from { transform: scale(1.05); } }
 @keyframes m-wipe { from { clip-path: inset(0 50% 0 50%); } to { clip-path: inset(0 0 0 0); } }
-@keyframes m-grow { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes m-fade { from { opacity: 0; } }
+@keyframes m-unfold { from { clip-path: circle(0% at 0 0); opacity: 0.3; } to { clip-path: circle(150% at 0 0); } }
 @keyframes m-develop { from { filter: sepia(0.45) saturate(0.4) blur(6px) brightness(1.08); } }
 
 .names .rise { display: inline-block; }
@@ -284,7 +295,8 @@ html[data-layout="bold"] .home-hero .photo { box-shadow: 0 0 0 6px color-mix(in 
 .m-enter:not([data-movement="still"]) .intro > :nth-child(n+7) { animation-delay: 620ms; }
 .m-enter:not([data-movement="still"]) .cover-wrap img.loaded { animation: m-settle 1100ms var(--ease-enter) both; }
 .m-enter[data-movement="lively"] .ornament { animation: m-wipe 900ms var(--ease-enter) both; }
-.m-enter[data-movement="lively"] body::before, .m-enter[data-movement="lively"] body::after { animation: m-grow 1400ms var(--ease-enter) both; }
+.m-enter:not([data-movement="still"]) .art-corner { animation: m-fade 1200ms var(--ease-enter) both; }
+.m-enter[data-movement="lively"] .art-corner { animation: m-unfold 1500ms var(--ease-enter) both; }
 .m-enter[data-movement="lively"] .cover-wrap img.loaded { animation: m-settle 1100ms var(--ease-enter) both, m-develop 1700ms var(--ease-enter) both; }
 
 /* Hover and press: every button and tile answers. */
@@ -298,6 +310,29 @@ button.link:hover, button.link:active { transform: none; }
   *, *::before, *::after { animation: none !important; transition-property: color, background-color, border-color, opacity !important; }
   button:hover, .btn:hover, .tiles a:hover, button:active, .btn:active { transform: none; }
 }
+
+/* ---------- Finishing touches (STYLES in designs.js) ---------- */
+html[data-cards="round"] { --radius: 18px; }
+html[data-buttons="pill"] { --btn-radius: 999px; }
+[data-text-size="s"] { font-size: 93.75%; }
+[data-text-size="l"] { font-size: 112.5%; }
+html[data-cards="soft"] { --radius: 8px; }
+html[data-cards="sharp"] { --radius: 0px; }
+html[data-buttons="rounded"] { --btn-radius: 10px; }
+html[data-buttons="square"] { --btn-radius: 0px; }
+html[data-buttons="outline"] { --btn-radius: 999px; }
+[data-buttons="outline"] button[type="submit"], [data-buttons="outline"] .btn.primary { background: transparent; color: var(--accent); }
+[data-buttons="outline"] button[type="submit"]:hover { background: var(--accent); color: var(--on-accent); filter: none; }
+[data-buttons="square"] button, [data-buttons="square"] .btn { letter-spacing: 0.06em; }
+/* Textures sit on the page background, so every palette gets them in its own color. */
+[data-texture="paper"] body { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E"); }
+[data-texture="linen"] body { background-image:
+  repeating-linear-gradient(0deg, color-mix(in srgb, var(--text) 3.5%, transparent) 0 1px, transparent 1px 4px),
+  repeating-linear-gradient(90deg, color-mix(in srgb, var(--text) 2.5%, transparent) 0 1px, transparent 1px 5px); }
+[data-texture="dots"] body { background-image: radial-gradient(color-mix(in srgb, var(--accent-2) 55%, transparent) 1.4px, transparent 1.6px); background-size: 22px 22px; }
+[data-texture="glow"] body { background-image:
+  radial-gradient(60rem 40rem at 10% -10%, color-mix(in srgb, var(--accent-2) 30%, transparent), transparent 70%),
+  radial-gradient(50rem 36rem at 100% 110%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%); background-attachment: fixed; }
 
 /* Sign-up form from the save the date */
 main.signup .ornament { margin: 0 auto var(--space-2); }

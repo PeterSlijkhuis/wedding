@@ -1,5 +1,5 @@
 import { init, get, post, upload, t, el, logout, formatDate, pageHref, LANGUAGES } from "/js/app.js";
-import { TEMPLATES, PALETTES, FONTS, LAYOUTS, ARTS, MOTIONS, MOODS, resolveDesign, applyDesign } from "/js/designs.js";
+import { TEMPLATES, PALETTES, FONTS, LAYOUTS, ARTS, MOTIONS, MOODS, STYLES, resolveDesign, applyDesign, artSvg, contrast } from "/js/designs.js";
 
 const $ = (id) => document.getElementById(id);
 let currentForm = null; // id of the form shown in the editor, or null
@@ -83,10 +83,14 @@ async function saveSite(changes) {
 const checked = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value;
 let mood = "all";
 
+const OWN_COLORS = { accent: "accent", accent2: "accent2", bg: "bg" }; // input id: palette key
+const ownColor = (id) => ($(id).dataset.custom ? $(id).value : "");
+
 function designDraft() {
   return { ...site, theme: checked("template") ?? site.theme, palette: checked("palette"), font: checked("font"),
     layout: checked("layout"), art: checked("art"), motion: checked("motion"), coverShape: checked("shape") ?? site.coverShape,
-    coverPhoto: Number(checked("cover") ?? site.coverPhoto), accent: $("accent").dataset.custom ? $("accent").value : "" };
+    coverPhoto: Number(checked("cover") ?? site.coverPhoto), accent: ownColor("accent"), accent2: ownColor("accent2"), bg: ownColor("bg"),
+    ...Object.fromEntries(Object.keys(STYLES).map((key) => [key, checked(key)])) };
 }
 
 /** One choice card: a hidden radio plus whatever shows it. */
@@ -100,8 +104,16 @@ function miniSite(design) {
   return el("div", {
     class: "mini", "data-layout": design.layout, "data-art": design.art,
     style: `--bg:${p.bg};--text:${p.text};--muted:${p.muted};--accent:${p.accent};--accent-2:${p.accent2};--on-accent:${p.onAccent};--font-display:${f.display.replaceAll('"', "'")};--font:${f.body.replaceAll('"', "'")}`,
-  }, el("span", { class: "art" }), el("b", {}, site.names || "Ana & Marko"), el("small", {}, "12 · 06 · 2027"), el("i", {}));
+  }, ...miniArt(design.art), el("b", {}, site.names || "Ana & Marko"), el("small", {}, "12 · 06 · 2027"), el("i", {}));
 }
+
+/** A box that fills itself with one artwork file once it has loaded. */
+function artBox(cls, file) {
+  const box = el("span", { class: cls, "aria-hidden": "true" });
+  artSvg(file).then((svg) => { box.innerHTML = svg; });
+  return box;
+}
+const miniArt = (id) => (ARTS[id]?.svg ? [artBox("corner tl", `${ARTS[id].svg}-corner.svg`), artBox("corner br", `${ARTS[id].svg}-corner.svg`)] : []);
 
 function renderTemplates(selected = checked("template") ?? site.theme) {
   $("moods").replaceChildren(...["all", ...MOODS].map((m) => el("button", {
@@ -119,21 +131,23 @@ function renderParts(design) {
     el("span", { class: "sample", style: `font-family:${f.display.replaceAll('"', "'")}` }, "Aa"), el("span", {}, f.name))));
   $("layouts").replaceChildren(...Object.entries(LAYOUTS).map(([id, name]) => choice("layout", id, design.layout, name,
     el("span", { class: `schema ${id}` }, el("i", {}), el("i", {})), el("span", {}, name))));
-  $("arts").replaceChildren(...Object.entries(ARTS).map(([id, a]) => choice("art", id, design.art, a.name, el("span", {}, a.name))));
+  $("arts").replaceChildren(...Object.entries(ARTS).map(([id, a]) => choice("art", id, design.art, a.name,
+    a.svg ? artBox("art-sample", `${a.svg}.svg`) : el("span", { class: `art-sample css ${id}` }), el("span", {}, a.name))));
+  for (const [key, values] of Object.entries(STYLES)) {
+    $(key).replaceChildren(...values.map((v) => choice(key, v, design[key], t(`admin.style.${key}.${v}`), el("span", {}, t(`admin.style.${key}.${v}`)))));
+  }
   $("motions").replaceChildren(...Object.entries(MOTIONS).map(([id, name]) => choice("motion", id, design.motion, t(`admin.motion.${id}`), el("span", {}, name))));
 }
 
 $("design").addEventListener("change", (e) => {
-  if (e.target.name === "template") renderParts(TEMPLATES[e.target.value]); // a template resets the four parts
+  if (e.target.name === "template") renderParts(resolveDesign({ theme: e.target.value })); // a template resets every part
   if (e.target.name === "template" || e.target.name === "motion") { // let the preview play its entrance again
     try {
       for (const key of Object.keys(sessionStorage)) if (key.startsWith("entered:")) sessionStorage.removeItem(key);
     } catch (err) { console.warn("sessionStorage unavailable", err); }
     reloadPreview();
   }
-  if (e.target.name === "template" || e.target.name === "palette") {
-    if (!$("accent").dataset.custom) $("accent").value = PALETTES[checked("palette")].accent;
-  }
+  if (e.target.name === "template" || e.target.name === "palette") showColors();
   previewDesign();
 });
 
@@ -173,15 +187,16 @@ const FORMS = {
       const design = resolveDesign(site);
       renderTemplates(site.theme);
       renderParts(design);
-      $("accent").dataset.custom = site.accent ? "1" : "";
-      $("accent").value = site.accent || PALETTES[design.palette].accent;
+      for (const id of Object.keys(OWN_COLORS)) $(id).dataset.custom = site[id] ? "1" : "";
+      showColors();
       await renderPhotoPicker("cover-picker", "cover", site.coverPhoto, "tip.cover");
       $("shapes").replaceChildren(...SHAPES.map((id) => choice("shape", id, site.coverShape, t(`admin.shape.${id}`), el("span", {}, t(`admin.shape.${id}`)))));
       previewDesign();
     },
     save: () => {
-      const { theme, palette, font, layout, art, motion, accent } = designDraft();
-      return saveSite({ theme, palette, font, layout, art, motion, accent, coverPhoto: Number(checked("cover") ?? 0), coverShape: checked("shape") });
+      const { theme, palette, font, layout, art, motion, accent, accent2, bg } = designDraft();
+      const styles = Object.fromEntries(Object.keys(STYLES).map((key) => [key, checked(key)]));
+      return saveSite({ theme, palette, font, layout, art, motion, accent, accent2, bg, ...styles, coverPhoto: Number(checked("cover") ?? 0), coverShape: checked("shape") });
     },
   },
   page: {
@@ -210,8 +225,18 @@ const FORMS = {
   },
 };
 
-$("accent").oninput = () => { $("accent").dataset.custom = "1"; previewDesign(); };
-$("accent-reset").onclick = () => { $("accent").dataset.custom = ""; $("accent").value = PALETTES[checked("palette")].accent; markDirty(); previewDesign(); };
+/** Color pickers show the palette's colors until the couple pick their own; warn when text gets hard to read. */
+function showColors() {
+  const p = PALETTES[checked("palette")];
+  for (const [id, key] of Object.entries(OWN_COLORS)) if (!$(id).dataset.custom) $(id).value = p[key];
+  const bg = $("bg").value;
+  $("contrast-warn").hidden = Math.min(contrast(p.text, bg), contrast($("accent").value, bg)) >= 4.5;
+}
+for (const id of Object.keys(OWN_COLORS)) $(id).oninput = () => { $(id).dataset.custom = "1"; showColors(); previewDesign(); };
+$("colors-reset").onclick = () => {
+  for (const id of Object.keys(OWN_COLORS)) $(id).dataset.custom = "";
+  showColors(); markDirty(); previewDesign();
+};
 
 $("slug").replaceChildren(...PAGE_SLUGS.map((s) => el("option", { value: s }, t(`page.${s}`))));
 $("lang").replaceChildren(...Object.entries(LANGUAGES).map(([code, name]) => el("option", { value: code }, name)));

@@ -1,28 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" stroke="#000" stroke-linecap="round">
-<circle cx="100" cy="100" r="34" stroke-width="3"/>
-<circle cx="100" cy="100" r="22" fill="#000" stroke="none" opacity=".35"/>
-<line x1="146.0" y1="100.0" x2="188.0" y2="100.0" stroke-width="3" opacity="1"/>
-<line x1="144.4" y1="111.9" x2="163.8" y2="117.1" stroke-width="2" opacity="0.6"/>
-<line x1="139.8" y1="123.0" x2="176.2" y2="144.0" stroke-width="3" opacity="1"/>
-<line x1="132.5" y1="132.5" x2="146.7" y2="146.7" stroke-width="2" opacity="0.6"/>
-<line x1="123.0" y1="139.8" x2="144.0" y2="176.2" stroke-width="3" opacity="1"/>
-<line x1="111.9" y1="144.4" x2="117.1" y2="163.8" stroke-width="2" opacity="0.6"/>
-<line x1="100.0" y1="146.0" x2="100.0" y2="188.0" stroke-width="3" opacity="1"/>
-<line x1="88.1" y1="144.4" x2="82.9" y2="163.8" stroke-width="2" opacity="0.6"/>
-<line x1="77.0" y1="139.8" x2="56.0" y2="176.2" stroke-width="3" opacity="1"/>
-<line x1="67.5" y1="132.5" x2="53.3" y2="146.7" stroke-width="2" opacity="0.6"/>
-<line x1="60.2" y1="123.0" x2="23.8" y2="144.0" stroke-width="3" opacity="1"/>
-<line x1="55.6" y1="111.9" x2="36.2" y2="117.1" stroke-width="2" opacity="0.6"/>
-<line x1="54.0" y1="100.0" x2="12.0" y2="100.0" stroke-width="3" opacity="1"/>
-<line x1="55.6" y1="88.1" x2="36.2" y2="82.9" stroke-width="2" opacity="0.6"/>
-<line x1="60.2" y1="77.0" x2="23.8" y2="56.0" stroke-width="3" opacity="1"/>
-<line x1="67.5" y1="67.5" x2="53.3" y2="53.3" stroke-width="2" opacity="0.6"/>
-<line x1="77.0" y1="60.2" x2="56.0" y2="23.8" stroke-width="3" opacity="1"/>
-<line x1="88.1" y1="55.6" x2="82.9" y2="36.2" stroke-width="2" opacity="0.6"/>
-<line x1="100.0" y1="54.0" x2="100.0" y2="12.0" stroke-width="3" opacity="1"/>
-<line x1="111.9" y1="55.6" x2="117.1" y2="36.2" stroke-width="2" opacity="0.6"/>
-<line x1="123.0" y1="60.2" x2="144.0" y2="23.8" stroke-width="3" opacity="1"/>
-<line x1="132.5" y1="67.5" x2="146.7" y2="53.3" stroke-width="2" opacity="0.6"/>
-<line x1="139.8" y1="77.0" x2="176.2" y2="56.0" stroke-width="3" opacity="1"/>
-<line x1="144.4" y1="88.1" x2="163.8" y2="82.9" stroke-width="2" opacity="0.6"/>
+<svg xmlns="http://www.w3.org/2000/svg" class="art" viewBox="0 0 300 100" aria-hidden="true" focusable="false">
+<path class="ds" d="M30 84 H270" stroke-width="1.6" stroke-linecap="round"/>
+<path class="l" d="M114 84 A36 36 0 0 1 186 84Z"/>
+<path class="ds" d="M104.6 76.8 L74.9 72.1" stroke-width="2.4" stroke-linecap="round"/>
+<path class="ls" d="M108.4 64.4 L93.9 57.6" stroke-width="1.6" stroke-linecap="round"/>
+<path class="ds" d="M115.5 53.6 L93 33.7" stroke-width="2.4" stroke-linecap="round"/>
+<path class="ls" d="M125.4 45.2 L116.8 31.7" stroke-width="1.6" stroke-linecap="round"/>
+<path class="ds" d="M137.2 39.8 L128.8 11" stroke-width="2.4" stroke-linecap="round"/>
+<path class="ls" d="M150 38 L150 22" stroke-width="1.6" stroke-linecap="round"/>
+<path class="ds" d="M162.8 39.8 L171.2 11" stroke-width="2.4" stroke-linecap="round"/>
+<path class="ls" d="M174.6 45.2 L183.2 31.7" stroke-width="1.6" stroke-linecap="round"/>
+<path class="ds" d="M184.5 53.6 L207 33.7" stroke-width="2.4" stroke-linecap="round"/>
+<path class="ls" d="M191.6 64.4 L206.1 57.6" stroke-width="1.6" stroke-linecap="round"/>
+<path class="ds" d="M195.4 76.8 L225.1 72.1" stroke-width="2.4" stroke-linecap="round"/>
 </svg>

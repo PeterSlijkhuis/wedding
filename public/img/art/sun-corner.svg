@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="art" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+<path class="t" d="M0 0 H150 A150 150 0 0 1 0 150Z" opacity="0.55"/>
+<path class="l" d="M0 0 H96 A96 96 0 0 1 0 96Z"/>
+<path class="ds" d="M0 120 A120 120 0 0 0 120 0" fill="none" stroke-width="2"/>
+<path class="ds" d="M171.8 9 L329.5 17.3" stroke-width="2.2" stroke-linecap="round"/>
+<path class="ls" d="M169.4 29.9 L246.2 43.4" stroke-width="1.4" stroke-linecap="round"/>
+<path class="ds" d="M164.5 50.3 L315.6 96.5" stroke-width="2.2" stroke-linecap="round"/>
+<path class="ls" d="M157.1 70 L228.4 101.7" stroke-width="1.4" stroke-linecap="round"/>
+<path class="ds" d="M147.4 88.6 L282.9 170" stroke-width="2.2" stroke-linecap="round"/>
+<path class="ls" d="M135.5 105.9 L197 153.9" stroke-width="1.4" stroke-linecap="round"/>
+<path class="ds" d="M121.6 121.6 L233.3 233.3" stroke-width="2.2" stroke-linecap="round"/>
+<path class="ls" d="M105.9 135.5 L153.9 197" stroke-width="1.4" stroke-linecap="round"/>
+<path class="ds" d="M88.6 147.4 L170 282.9" stroke-width="2.2" stroke-linecap="round"/>
+<path class="ls" d="M70 157.1 L101.7 228.4" stroke-width="1.4" stroke-linecap="round"/>
+<path class="ds" d="M50.3 164.5 L96.5 315.6" stroke-width="2.2" stroke-linecap="round"/>
+<path class="ls" d="M29.9 169.4 L43.4 246.2" stroke-width="1.4" stroke-linecap="round"/>
+<path class="ds" d="M9 171.8 L17.3 329.5" stroke-width="2.2" stroke-linecap="round"/>
+</svg>

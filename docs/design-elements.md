@@ -1,24 +1,26 @@
 # Design elements: where to get them and how to add one
 
-The decorations in `public/img/art/` (sprig, botanical sides, wildflowers, olive branch, stars, sun) are original drawings made for this project, so they carry no license terms beyond this repository's own.
+The decorations in `public/img/art/` are original drawings made for this project by `scripts/make_art.py`, so they carry no license terms beyond this repository's own. Each decoration is two files: `<name>.svg`, the ornament above the names (300 x 100), and `<name>-corner.svg`, the arrangement for the top-left corner of the page (400 x 400). The site turns the same corner round for the bottom right.
+
+## Colors: three tones from the palette
+
+Shapes in the files carry a class instead of a color, and `site.css` paints them from the palette, so every decoration fits every palette and the couple's own colors:
+
+| Class | Tone |
+|---|---|
+| `l` (fill), `s` or `ls` (stroke) | leaf: the palette's second color |
+| `d` (fill), `ds` (stroke) | deep: the accent color, softened |
+| `t` (fill), `ts` (stroke) | light: a pale tint of the second color |
+
+`npm test` fails if a decoration file contains a fixed color.
 
 ## Adding a decoration
 
-1. Find or draw a one-color SVG. Colors in the file do not matter: the site uses it as a mask and paints it in the palette's second color, so it fits every palette.
-2. Put it in `public/img/art/`.
-3. Add one line to `ARTS` in `public/js/designs.js`, for example:
+1. Draw it in `scripts/make_art.py`: add a `corner_<name>()` function and a case in `ornament_for()`, using the leaf, flower and branch helpers there, then run `python3 scripts/make_art.py`. A hand-drawn SVG works too, as long as every shape uses one of the classes above and the root `<svg>` has `class="art"`.
+2. Add one line to `ARTS` in `public/js/designs.js`, for example `roses: { name: "Roses", svg: "roses" },`.
+3. Run `npm test`. It fails if a file is missing.
 
-   ```js
-   roses: { name: "Roses", ornament: "roses.svg", ratio: 2.6, sides: "roses-side.svg" },
-   ```
-
-   - `ornament`: the small piece above the names and on the home page. `ratio` is its width divided by its height.
-   - `sides`: a tall piece (about 1:4) shown down both edges of wide screens, mirrored on the right.
-   - `scatter`: a piece tiled softly behind the landing and home hero.
-   - `panel`: a large square piece for the split layout's side panel.
-4. Run `npm test`. It fails if a file named in `ARTS` is missing.
-
-Keep files small (under 20 KB) and avoid embedded bitmaps; a mask only uses the shape.
+Keep each file under about 100 KB; they are loaded once per visit.
 
 ## Free sources whose license allows shipping the files in an open-source project
 

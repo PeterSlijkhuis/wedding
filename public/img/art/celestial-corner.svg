@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="art" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+<path class="ts" d="M150 -2 A150 150 0 0 1 -2 150" fill="none" stroke-width="1.2" stroke-dasharray="2 7" stroke-linecap="round" opacity="0.5"/>
+<path class="ts" d="M230 -2 A230 230 0 0 1 -2 230" fill="none" stroke-width="1.2" stroke-dasharray="2 7" stroke-linecap="round" opacity="0.35"/>
+<path class="ts" d="M310 -2 A310 310 0 0 1 -2 310" fill="none" stroke-width="1.2" stroke-dasharray="2 7" stroke-linecap="round" opacity="0.25"/>
+<path class="d" d="M120 46 A62 62 0 1 0 170 150 A50 50 0 1 1 120 46Z"/>
+<path class="d" d="M200 70 Q204.4 87.6 222 92 Q204.4 96.4 200 114 Q195.6 96.4 178 92 Q195.6 87.6 200 70Z"/>
+<path class="d" d="M68 195 Q71 207 83 210 Q71 213 68 225 Q65 213 53 210 Q65 207 68 195Z" opacity="0.90"/>
+<circle class="l" cx="56.1" cy="234.5" r="1.7" opacity="0.53"/>
+<path class="l" d="M174.2 167.7 Q175 170.9 178.2 171.7 Q175 172.5 174.2 175.7 Q173.4 172.5 170.2 171.7 Q173.4 170.9 174.2 167.7Z" opacity="0.75"/>
+<circle class="l" cx="199" cy="23.6" r="1.3" opacity="0.54"/>
+<circle class="l" cx="14.4" cy="339.2" r="2.2" opacity="0.77"/>
+<circle class="l" cx="11.6" cy="111.8" r="1.2" opacity="0.97"/>
+<circle class="l" cx="125.3" cy="52.6" r="1.2" opacity="0.96"/>
+<circle class="l" cx="154.1" cy="187.7" r="1.7" opacity="0.51"/>
+<path class="l" d="M12.6 287.3 Q14.1 293 19.7 294.4 Q14.1 295.8 12.6 301.5 Q11.2 295.8 5.5 294.4 Q11.2 293 12.6 287.3Z" opacity="0.68"/>
+<circle class="l" cx="41.6" cy="162" r="1.3" opacity="0.95"/>
+<circle class="l" cx="124.2" cy="153.4" r="2.4" opacity="0.63"/>
+<circle class="l" cx="9.1" cy="31.7" r="2.4" opacity="0.70"/>
+<circle class="l" cx="167.1" cy="187.1" r="1.3" opacity="0.77"/>
+<circle class="l" cx="61.4" cy="57.8" r="2.3" opacity="0.61"/>
+<path class="l" d="M203.1 100 Q203.9 103.4 207.3 104.2 Q203.9 105.1 203.1 108.5 Q202.2 105.1 198.8 104.2 Q202.2 103.4 203.1 100Z" opacity="0.93"/>
+<circle class="l" cx="127.7" cy="84.1" r="1.2" opacity="0.44"/>
+<circle class="l" cx="17.7" cy="87.7" r="1.6" opacity="0.50"/>
+<circle class="l" cx="23.6" cy="114.9" r="2.4" opacity="0.85"/>
+<circle class="l" cx="162.9" cy="85.8" r="1.7" opacity="0.84"/>
+<circle class="l" cx="9.6" cy="72.1" r="2.1" opacity="0.93"/>
+<circle class="l" cx="204.5" cy="144.9" r="2.2" opacity="0.58"/>
+<circle class="l" cx="181.7" cy="93.8" r="1" opacity="0.81"/>
+<circle class="l" cx="324.4" cy="8" r="1.9" opacity="0.91"/>
+<circle class="l" cx="198.7" cy="87.4" r="2.3" opacity="0.94"/>
+<path class="l" d="M45.4 28.1 Q46.2 31.4 49.5 32.2 Q46.2 33.1 45.4 36.3 Q44.6 33.1 41.3 32.2 Q44.6 31.4 45.4 28.1Z" opacity="0.78"/>
+<circle class="l" cx="47.9" cy="294.9" r="1.2" opacity="0.72"/>
+<path class="l" d="M110.3 163.3 Q111.2 167 114.9 167.9 Q111.2 168.8 110.3 172.6 Q109.3 168.8 105.6 167.9 Q109.3 167 110.3 163.3Z" opacity="0.67"/>
+</svg>
