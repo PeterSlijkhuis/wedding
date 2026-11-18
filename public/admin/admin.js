@@ -677,7 +677,57 @@ $("focus-save").onclick = async () => {
   await afterPhotoChange();
 };
 
-// ---------- Router: #dashboard, #details, #design, #pages, #photos, #guests, #rsvp, #privacy ----------
+// ---------- Publish: the test site's changes go to the live site ----------
+async function renderPublish() {
+  $("publish-status").textContent = "";
+  const info = await get("/api/admin/publish").catch((err) => ({ stage: "live", error: err.message }));
+  const test = info.stage === "test";
+  $("stage-badge").textContent = t(test ? "admin.publish.onTest" : "admin.publish.onLive");
+  $("stage-badge").className = `stage-badge ${info.stage}`;
+  $("stage-text").textContent = t(test ? "admin.publish.testText" : "admin.publish.liveText");
+  $("gh-repo").value = info.repo ?? "";
+  $("connect-box").open = !info.connected;
+  $("publish-ready").hidden = !info.connected;
+  if (info.error) $("publish-status").textContent = info.error;
+  if (!info.connected) return;
+  $("publish-waiting").textContent = info.waiting ? fmt(t("admin.publish.waiting"), { n: info.waiting }) : t("admin.publish.upToDate");
+  $("publish-changes").replaceChildren(...info.changes.map((c) => el("li", {}, c.message, el("small", {}, ` ${formatDate(c.at.slice(0, 10))}`))));
+  $("publish-go").hidden = !test;
+  $("publish-go").disabled = !info.waiting;
+  const deploy = (d) => {
+    if (!d) return el("span", {}, t("admin.publish.never"));
+    const state = d.status !== "completed" ? "running" : d.conclusion === "success" ? "ok" : "failed";
+    return el("a", { href: d.url, target: "_blank", rel: "noopener", class: `pill ${state}` }, `${t(`admin.publish.${state}`)} · ${formatDate(d.at.slice(0, 10))}`);
+  };
+  $("deploys").replaceChildren(
+    el("dt", {}, t("admin.publish.testSite")), el("dd", {}, deploy(info.deploys.test)),
+    el("dt", {}, t("admin.publish.liveSite")), el("dd", {}, deploy(info.deploys.live)));
+}
+
+$("publish-go").onclick = async () => {
+  $("publish-go").disabled = true;
+  $("publish-status").textContent = t("admin.publish.busy");
+  try {
+    const { published } = await post("/api/admin/publish", {});
+    await renderPublish();
+    $("publish-status").textContent = t(published ? "admin.publish.done" : "admin.publish.upToDate");
+  } catch (err) {
+    $("publish-status").textContent = err.message;
+    $("publish-go").disabled = false;
+  }
+};
+
+$("gh-connect").onclick = async () => {
+  try {
+    await post("/api/admin/publish/connect", { repo: $("gh-repo").value, token: $("gh-token").value });
+    $("gh-token").value = "";
+    await renderPublish();
+  } catch (err) {
+    $("publish-status").textContent = err.message;
+  }
+};
+
+// ---------- Router: #dashboard, #details, #design, #pages, #photos, #guests, #rsvp, #privacy, #publish ----------
 const VIEWS = {
   dashboard: { preview: "/home" },
   details: { form: "details", preview: "/", title: "admin.tile.details" },
@@ -687,6 +737,7 @@ const VIEWS = {
   guests: { preview: "/rsvp", title: "admin.tile.guests", load: renderGuests, wide: true },
   rsvp: { preview: "/rsvp", title: "admin.tile.rsvp", load: renderRsvp, wide: true },
   privacy: { form: "privacy", preview: "/", title: "admin.tile.privacy" },
+  publish: { preview: "/", title: "admin.tile.publish", load: renderPublish },
 };
 
 async function show() {

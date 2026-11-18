@@ -116,3 +116,10 @@ test("validateSite keeps only the origin of the website address", () => {
   assert.equal(validateSite({ siteUrl: "" }).siteUrl, "");
   rejects(() => validateSite({ siteUrl: "http://x.com" }), /Website address/);
 });
+
+test("publish: repository names", async () => {
+  const { parseRepo } = await import("../src/publish.js");
+  assert.equal(parseRepo("https://github.com/PeterSlijkhuis/wedding.git"), "PeterSlijkhuis/wedding");
+  assert.equal(parseRepo(" PeterSlijkhuis/wedding "), "PeterSlijkhuis/wedding");
+  assert.throws(() => parseRepo("wedding"), /owner\/name/);
+});

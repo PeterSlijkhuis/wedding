@@ -226,3 +226,19 @@ svg.art .s, svg.art .ls { stroke: var(--art-leaf); fill: none; } svg.art .ds { s
 .own-colors label { margin-top: 0; font-size: 0.85rem; }
 .own-colors input[type="color"] { width: 4rem; height: 2.4rem; padding: 0.15rem; }
 .warn { background: #fff4d6; color: #5c4400; border-radius: 8px; padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+
+/* Publish */
+.stage-badge { display: inline-block; border-radius: 999px; padding: 0.25rem 0.9rem; font-weight: 600; font-size: 0.85rem; }
+.stage-badge.test { background: #fff4d6; color: #5c4400; }
+.stage-badge.live { background: #e3f3e6; color: #1d5b2c; }
+.changes { padding-left: 1.2rem; max-height: 14rem; overflow: auto; }
+.changes small { color: var(--muted); }
+.deploys { display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 1rem; margin-top: 1.4rem; }
+.deploys dt { font-weight: 600; white-space: nowrap; } .deploys dd { margin: 0; }
+.pill.ok { background: #e3f3e6; color: #1d5b2c; } .pill.failed { background: #fde2e1; color: #8a1c17; } .pill.running { background: #fff4d6; color: #5c4400; }
+#connect-box { margin-top: 1.5rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+#connect-box > summary { cursor: pointer; padding: 0.9rem 0.2rem; font-weight: 600; }
+#connect-box .steps { padding-left: 1.2rem; font-size: 0.9rem; }
+#connect-box button { margin-top: 1rem; }
+#publish-go { background: var(--accent); color: #fff; border-color: var(--accent); }
+#publish-go:disabled { opacity: 0.5; cursor: default; }

@@ -1,3 +1,4 @@
+import { publishApi } from "./publish.js";
 import { hashPassword, verifyPassword, safeEqual, signToken, verifyToken } from "./auth.js";
 import { contentApi } from "./content.js";
 import { HttpError, json, body, getSetting, setSetting } from "./util.js";
@@ -66,7 +67,8 @@ async function api(request, env, url) {
     await setSetting(env, "guest_password", await hashPassword(password));
     return json({ ok: true });
   }
-  return (await contentApi(key, { request, env, role, url })) ?? json({ error: "Not found" }, 404);
+  const ctx = { request, env, role, url };
+  return (await contentApi(key, ctx)) ?? (await publishApi(key, ctx)) ?? json({ error: "Not found" }, 404);
 }
 
 async function roleForPassword(password, env) {

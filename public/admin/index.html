@@ -32,6 +32,7 @@
       <a class="soon" aria-disabled="true" data-i18n-title="tip.soon"><span data-i18n="admin.tile.drinks"></span> <em data-i18n="admin.soon"></em></a>
       <h3 data-i18n="admin.group.settings"></h3>
       <a href="#privacy" data-i18n="admin.tile.privacy" data-i18n-title="tip.tile.privacy"></a>
+      <a href="#publish" data-i18n="admin.tile.publish" data-i18n-title="tip.tile.publish"></a>
       <div class="drawer-foot"><b id="drawer-names"></b><small id="drawer-date"></small></div>
     </nav>
 
@@ -200,6 +201,32 @@
         <label for="password" data-i18n="admin.guestPassword"></label>
         <input id="password" type="text" minlength="6" autocomplete="off">
       </form>
+
+      <section data-view="publish">
+        <h2 data-i18n="admin.tile.publish"></h2>
+        <p class="stage-badge" id="stage-badge"></p>
+        <p class="muted" id="stage-text"></p>
+        <div id="publish-ready" hidden>
+          <p><b id="publish-waiting"></b></p>
+          <ul class="changes" id="publish-changes"></ul>
+          <button type="button" id="publish-go" data-i18n="admin.publish.go" data-i18n-title="tip.publishGo"></button>
+          <dl class="deploys" id="deploys"></dl>
+        </div>
+        <p class="status" id="publish-status" role="status"></p>
+        <details class="group" id="connect-box">
+          <summary data-i18n="admin.publish.connect"></summary>
+          <ol class="steps">
+            <li data-i18n="admin.publish.step1"></li>
+            <li data-i18n="admin.publish.step2"></li>
+          </ol>
+          <a class="btn ghost" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener" data-i18n="admin.publish.makeToken"></a>
+          <label for="gh-repo" data-i18n="admin.publish.repo"></label>
+          <input id="gh-repo" placeholder="PeterSlijkhuis/wedding" autocomplete="off">
+          <label for="gh-token" data-i18n="admin.publish.token"></label>
+          <input id="gh-token" type="password" autocomplete="off" placeholder="github_pat_...">
+          <button type="button" id="gh-connect" data-i18n="admin.publish.connectGo"></button>
+        </details>
+      </section>
     </div>
 
     <footer id="savebar" hidden>

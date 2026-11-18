@@ -13,5 +13,18 @@
   "kv_namespaces": [{ "binding": "PHOTOS" }],
   "d1_databases": [
     { "binding": "DB", "database_name": "wedding", "migrations_dir": "migrations" }
-  ]
+  ],
+  // This is the live site. SITE_STAGE tells the admin which site it is on.
+  "vars": { "SITE_STAGE": "live" },
+  "env": {
+    // The test site: its own Worker, database and photos, deployed from the development branch.
+    "test": {
+      "name": "wedding-test",
+      "vars": { "SITE_STAGE": "test" },
+      "kv_namespaces": [{ "binding": "PHOTOS" }],
+      "d1_databases": [
+        { "binding": "DB", "database_name": "wedding-test", "migrations_dir": "migrations" }
+      ]
+    }
+  }
 }

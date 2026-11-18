@@ -48,7 +48,7 @@ header nav a, .tools > a, .tools > button.link, header > #admin-link {
   font: inherit; font-size: 0.9rem; letter-spacing: 0.02em; text-decoration: none; cursor: pointer;
   transition: background-color 160ms var(--ease), border-color 160ms var(--ease), color 160ms var(--ease), transform 160ms var(--ease);
 }
-.tools > a, .tools > button.link, header > #admin-link { border-color: var(--border); }
+.tools > a, .tools > button.link, header > #admin-link { border-color: var(--border); background: color-mix(in srgb, var(--bg) 82%, transparent); } /* stays readable over the corner art */
 header > #admin-link[hidden] { display: none; }
 header nav a:hover, .tools > a:hover, .tools > button.link:hover, header > #admin-link:hover { background: var(--tint); color: var(--text); border-color: var(--tint); }
 header nav a:active, .tools > a:active, .tools > button.link:active, header > #admin-link:active { transform: scale(0.96); transition-duration: 80ms; }

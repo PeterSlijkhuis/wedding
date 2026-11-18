@@ -39,6 +39,19 @@ npm run db:migrate
 
 The site is then live at `https://wedding.<your-subdomain>.workers.dev`.
 
+## Test site and live site, published from the admin
+
+Once this is set up, nobody needs a terminal. Each change to the `development` branch goes to a test site (`wedding-test`, with its own guests and photos). Publish in the admin of the test site sends everything to the live site (`wedding`) that your guests use.
+
+One-time setup, all in the browser:
+
+1. Cloudflare: My Profile, API Tokens, Create Token, use the "Edit Cloudflare Workers" template and add the permission Account, D1, Edit. Copy the token. Also copy your Account ID (Workers & Pages, right-hand column).
+2. GitHub: open your copy of this repository, Settings, Secrets and variables, Actions, and add three repository secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and `ADMIN_PASSWORD`, which is the admin password for the test site.
+3. GitHub, Actions tab: open the deploy workflow and choose Run workflow on `development`. The test site appears at `https://wedding-test.<your-subdomain>.workers.dev`.
+4. In the test site's admin, open Publish, choose Make a token on GitHub, and create a fine-grained token for this repository only, with Contents read and write and Actions read. Paste it with the repository name and press Connect.
+
+From then on, the Publish page lists the changes waiting to go live and has one button to publish them. Each site's deploy also updates its database. The live site keeps its own guests, photos and texts; publishing moves only the website itself.
+
 ## Invitation emails (optional)
 
 Invitations go out through [Resend](https://resend.com). The free plan sends 100 emails a day and 3,000 a month. Resend only sends to guests from a domain you own, so you need a domain first (for example one bought on Cloudflare).
