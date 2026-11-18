@@ -146,6 +146,7 @@ export async function guestHeader(site) {
   const here = location.pathname + location.search;
   const links = [["/home", t("nav.home")], ...pages.map((s) => [pageHref(s), t(`page.${s}`)]), ["/rsvp", t("nav.rsvp")]];
   document.querySelector("main")?.setAttribute("id", "main");
+  document.querySelector("main")?.setAttribute("tabindex", "-1"); // so the skip link moves focus there and hides again
   document.querySelector("header").replaceChildren(
     el("a", { class: "skip-link", href: "#main" }, t("nav.skip")),
     el("span", { class: "tools" },

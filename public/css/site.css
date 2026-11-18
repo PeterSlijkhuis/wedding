@@ -40,19 +40,34 @@ h1, h2, h3, .site-title, .names {
 }
 .site-title, .names { font-family: var(--font-display); text-wrap: balance; }
 header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-2); gap: var(--space-2); flex-wrap: wrap; max-width: 64rem; margin: 0 auto; }
-header nav { display: flex; gap: 1.4rem; flex-wrap: wrap; }
-/* 44px tall tap targets in the header, so phones hit the right link. */
-header nav a, .tools > a, .tools > button.link { display: inline-flex; align-items: center; min-height: 44px; }
-header nav a { text-decoration: none; color: var(--muted); padding-bottom: 2px; }
-header nav a[aria-current="page"] { color: var(--text); border-bottom: 1.5px solid var(--accent); }
-.tools { display: flex; gap: var(--space-2); align-items: center; }
-.langs { display: flex; gap: 0.1rem; }
-.langs a { display: inline-flex; align-items: center; min-height: 44px; min-width: 2.4rem; justify-content: center; padding: 0 0.3rem;
-  color: var(--text); text-decoration: none; font-size: 0.8rem; letter-spacing: 0.08em; }
-.langs a[aria-current] { color: var(--text); text-decoration: underline; text-underline-offset: 6px; text-decoration-color: var(--accent); }
-.langs a:hover { color: var(--accent); }
-.skip-link { position: absolute; left: var(--space-2); top: -4rem; background: var(--card); color: var(--text); padding: 0.6rem 1rem; border-radius: 8px; z-index: 10; }
-.skip-link:focus { top: var(--space-1); }
+/* Header menu: every item is a pill with a 44px tap area. Quiet until hovered; the current page is filled. */
+header nav { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+header nav a, .tools > a, .tools > button.link, header > #admin-link {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 1.05rem; margin: 0;
+  border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--text);
+  font: inherit; font-size: 0.9rem; letter-spacing: 0.02em; text-decoration: none; cursor: pointer;
+  transition: background-color 160ms var(--ease), border-color 160ms var(--ease), color 160ms var(--ease), transform 160ms var(--ease);
+}
+.tools > a, .tools > button.link, header > #admin-link { border-color: var(--border); }
+header > #admin-link[hidden] { display: none; }
+header nav a:hover, .tools > a:hover, .tools > button.link:hover, header > #admin-link:hover { background: var(--tint); color: var(--text); border-color: var(--tint); }
+header nav a:active, .tools > a:active, .tools > button.link:active, header > #admin-link:active { transform: scale(0.96); transition-duration: 80ms; }
+header nav a[aria-current="page"], header nav a[aria-current="page"]:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.tools { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+/* Languages: one segmented pill, the chosen language filled */
+nav.langs { gap: 2px; padding: 2px; border: 1px solid var(--border); border-radius: 999px; background: color-mix(in srgb, var(--card) 75%, transparent); flex-wrap: nowrap; }
+nav.langs a { min-width: 2.8rem; padding: 0 0.7rem; font-size: 0.78rem; letter-spacing: 0.08em; }
+@media (max-width: 30rem) {
+  .tools { gap: 0.3rem; flex-wrap: nowrap; }
+  .tools > a, .tools > button.link, header > #admin-link { padding: 0 0.75rem; font-size: 0.85rem; }
+  nav.langs a { min-width: 2.3rem; padding: 0 0.35rem; }
+}
+nav.langs a[aria-current="true"], nav.langs a[aria-current="true"]:hover { background: var(--text); border-color: var(--text); color: var(--bg); }
+/* Skip link: hidden above the window until a keyboard user tabs to it; never covers the menu */
+.skip-link { position: fixed; left: 50%; top: 0.5rem; transform: translate(-50%, -200%); z-index: 100; background: var(--card); color: var(--text);
+  padding: 0.6rem 1.2rem; border-radius: 999px; box-shadow: 0 4px 16px rgb(0 0 0 / 0.15); text-decoration: none; transition: transform 160ms var(--ease); }
+.skip-link:focus { transform: translate(-50%, 0); }
+[tabindex="-1"]:focus { outline: none; }
 main { max-width: 42rem; margin: 0 auto; padding: var(--space-4) var(--space-2); }
 h1 { font-size: var(--step-4); text-align: center; margin: var(--space-1) 0 var(--space-3); }
 h2 { font-size: var(--step-2); margin-top: 0; }
@@ -181,7 +196,12 @@ html[data-layout="bold"] .hero .date, html[data-layout="bold"] .hero .location,
 html[data-layout="bold"] .hero .countdown, html[data-layout="bold"] .hero .tagline,
 html[data-layout="bold"] .hero header a { color: var(--on-accent); }
 html[data-layout="bold"] .hero .btn { background: var(--on-accent); color: var(--accent); border-color: var(--on-accent); }
-html[data-layout="bold"] .hero .langs a[aria-current] { color: var(--on-accent); text-decoration-color: var(--on-accent); }
+html[data-layout="bold"] .hero header a, html[data-layout="bold"] .hero nav.langs { border-color: color-mix(in srgb, var(--on-accent) 45%, transparent); background: transparent; }
+html[data-layout="bold"] .hero nav.langs a { border-color: transparent; }
+html[data-layout="bold"] .hero header > #admin-link { color: var(--on-accent); }
+html[data-layout="bold"] .hero header > #admin-link:hover { background: color-mix(in srgb, var(--on-accent) 18%, transparent); }
+html[data-layout="bold"] .hero header a:hover { background: color-mix(in srgb, var(--on-accent) 18%, transparent); color: var(--on-accent); }
+html[data-layout="bold"] .hero nav.langs a[aria-current="true"] { background: var(--on-accent); border-color: var(--on-accent); color: var(--accent); }
 html[data-layout="bold"] .home-hero { background-color: var(--accent); color: var(--on-accent); padding: var(--space-4) var(--space-3); border-radius: var(--radius); }
 html[data-layout="bold"] .home-hero .date, html[data-layout="bold"] .home-hero .location,
 html[data-layout="bold"] .home-hero .countdown, html[data-layout="bold"] .home-hero .muted { color: var(--on-accent); }
