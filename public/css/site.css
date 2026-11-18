@@ -298,3 +298,9 @@ button.link:hover, button.link:active { transform: none; }
   *, *::before, *::after { animation: none !important; transition-property: color, background-color, border-color, opacity !important; }
   button:hover, .btn:hover, .tiles a:hover, button:active, .btn:active { transform: none; }
 }
+
+/* Sign-up form from the save the date */
+main.signup .ornament { margin: 0 auto var(--space-2); }
+main.signup h1 { margin-bottom: var(--space-1); }
+.signup-when, .signup-done { text-align: center; }
+.signup-when { margin: 0 0 var(--space-3); }

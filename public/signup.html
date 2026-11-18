@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <title>Wedding</title>
+  <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+  <header><a class="skip-link" href="#main" data-i18n="nav.skip"></a><span></span><nav class="langs" data-i18n-title="tip.lang"></nav></header>
+  <main id="main" tabindex="-1" class="signup">
+    <div class="ornament" aria-hidden="true"></div>
+    <h1 class="names" id="names"></h1>
+    <p class="muted signup-when" id="when"></p>
+    <form class="card" id="signup">
+      <p data-i18n="signup.intro"></p>
+      <label for="name" data-i18n="signup.name"></label>
+      <input id="name" maxlength="100" autocomplete="name" required>
+      <label for="email" data-i18n="signup.email"></label>
+      <input id="email" type="email" maxlength="200" autocomplete="email" required>
+      <label for="others" data-i18n="signup.others"></label>
+      <textarea id="others" rows="3" maxlength="1100"></textarea>
+      <p class="error" id="error" role="alert"></p>
+      <button type="submit" data-i18n="signup.submit"></button>
+    </form>
+    <div class="card signup-done" id="done" hidden>
+      <h2 data-i18n="signup.thanks"></h2>
+      <p id="done-text"></p>
+    </div>
+  </main>
+  <script type="module">
+    import { init, post, t, formatDate } from "/js/app.js";
+    const $ = (id) => document.getElementById(id);
+    const site = await init();
+    $("names").textContent = site.names;
+    $("when").textContent = [formatDate(site.date), site.location].filter(Boolean).join(" · ");
+    const code = new URLSearchParams(location.search).get("code") ?? "";
+    $("signup").onsubmit = async (e) => {
+      e.preventDefault();
+      $("error").textContent = "";
+      try {
+        const { already } = await post("/api/signup", { code, name: $("name").value, email: $("email").value, others: $("others").value });
+        $("signup").hidden = true;
+        $("done-text").textContent = t(already ? "signup.already" : "signup.doneText");
+        $("done").hidden = false;
+      } catch (err) {
+        $("error").textContent = err.message;
+      }
+    };
+  </script>
+</body>
+</html>

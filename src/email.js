@@ -7,19 +7,28 @@ export const MAX_PER_SEND = 100; // Resend's batch limit, and the free plan's da
 
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
-/** Plain text and HTML of one invitation. Everything the couple typed is escaped. */
-export function invitationEmail({ names, date, location, message, siteUrl, button }) {
+export const KINDS = ["savedate", "invitation", "thanks"];
+
+const PLAIN = { bg: "#f6f5f0", card: "#ffffff", text: "#2b2b2b", muted: "#666666", accent: "#2b2b2b", onAccent: "#ffffff", display: "Georgia, serif", body: "Arial, sans-serif" };
+
+/**
+ * Plain text and HTML of one email in the site's colors and fonts. Everything the couple typed is escaped.
+ * Email apps that block web fonts (Gmail, Outlook) fall back to the generic family at the end of each font list.
+ */
+export function invitationEmail({ names, date, location, message, siteUrl, button, design = PLAIN }) {
+  const d = { ...PLAIN, ...design };
+  const font = (f) => escapeHtml(f).replace(/&quot;/g, "'");
   const paras = String(message).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
   const when = [date, location].filter(Boolean).join(" · ");
   const text = [names, when, ...paras, `${button}: ${siteUrl}`].filter(Boolean).join("\n\n");
-  const html = `<!doctype html><html><body style="margin:0;background:#f6f5f0;font-family:Georgia,serif;color:#2b2b2b">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px">
+  const html = `<!doctype html><html><body style="margin:0;background:${d.bg};font-family:${font(d.body)};color:${d.text}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${d.bg}"><tr><td align="center" style="padding:32px 16px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:${d.card};border-radius:16px;border-top:6px solid ${d.accent}">
 <tr><td style="padding:40px 32px;text-align:center">
-<h1 style="font-weight:normal;font-size:32px;margin:0 0 8px">${escapeHtml(names)}</h1>
-${when ? `<p style="margin:0 0 24px;color:#666;font-size:16px">${escapeHtml(when)}</p>` : ""}
+<h1 style="font-family:${font(d.display)};font-weight:normal;font-size:34px;line-height:1.2;margin:0 0 8px;color:${d.text}">${escapeHtml(names)}</h1>
+${when ? `<p style="margin:0 0 24px;color:${d.muted};font-size:16px">${escapeHtml(when)}</p>` : ""}
 ${paras.map((p) => `<p style="margin:0 0 16px;font-size:17px;line-height:1.6">${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("\n")}
-<p style="margin:32px 0 0"><a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:#2b2b2b;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:16px">${escapeHtml(button)}</a></p>
+<p style="margin:32px 0 0"><a href="${escapeHtml(siteUrl)}" style="display:inline-block;background:${d.accent};color:${d.onAccent};text-decoration:none;padding:14px 28px;border-radius:999px;font-size:16px">${escapeHtml(button)}</a></p>
 </td></tr></table></td></tr></table></body></html>`;
   return { text, html };
 }

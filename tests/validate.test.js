@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { nameKey, validateSite, validateRsvp, parseNames, validatePage, validateGuest, parseCsv, csvGuests, validateInvite } from "../src/validate.js";
+import { nameKey, validateSite, validateRsvp, parseNames, validatePage, validateGuest, parseCsv, csvGuests, validateInvite, validateSignup } from "../src/validate.js";
 
 const rejects = (fn, pattern) => assert.throws(fn, (err) => err.status === 400 && pattern.test(err.message));
 
@@ -100,4 +100,10 @@ test("validateInvite", () => {
   assert.equal(validateInvite({ from: "hi@ana.com", subject: "s", message: "m" }).from, "hi@ana.com");
   rejects(() => validateInvite({ from: "Ana", subject: "s", message: "m" }), /From/);
   rejects(() => validateInvite({ from: "hi@ana.com", subject: "", message: "m" }), /subject/);
+});
+
+test("validateSignup", () => {
+  assert.deepEqual(validateSignup({ name: "Lena", email: "Lena@X.si", others: "Tom\n\n Baby \n" }), { name: "Lena", email: "lena@x.si", others: ["Tom", "Baby"] });
+  rejects(() => validateSignup({ name: "Lena", email: "" }), /name and email/);
+  rejects(() => validateSignup({ name: "L", email: "l@x.si", others: Array(11).fill("x").join("\n") }), /At most 10/);
 });

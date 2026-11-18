@@ -19,7 +19,7 @@ Log in with the admin password (`change-me` locally). `/admin/` is a dashboard o
 - Design: pick one of 23 templates (filter by mood: elegant, bold, charming, earthy, expressive), then change any of its parts: colors (17 palettes), fonts (12 pairings), layout (centered, framed, split, bold banner), decoration (flowers, olive branch, stars, sun and more) and motion (still, gentle, lively). Also an accent color, a cover photo and its shape
 - Website: the home page message and the text pages (Our story, Schedule, Travel, FAQ, Gifts) per language; a page with no text stays hidden
 - Photos: a private library for the couple. Drag photos in; they are resized to 2000px on your device, which also strips location data, and stored in free Cloudflare KV. Guests see only the photos you place on the site (the cover and page photos), and only after the guest password. Pick a focus point per photo so cropping never cuts off faces
-- Guest list and RSVP: a searchable table of every guest with an edit dialog per guest (name, email, RSVP, meal, dietary needs, add someone to the group), filters by answer, invitation emails through Resend with sent, opened and clicked status, CSV import and export (works with Excel, also in Dutch and Spanish), and an RSVP overview with meal counts
+- Guest list and RSVP: a searchable table of every guest with an edit dialog per guest (name, email, RSVP, meal, dietary needs, add someone to the group), filters by answer, save the date, invitation and thank-you emails through Resend in your site's colors, with sent, opened and clicked status per guest, a sign-up link in the save the date so guests add themselves (and who comes with them) to the list, CSV import and export (works with Excel, also in Dutch and Spanish), and an RSVP overview with meal counts
 - Privacy: set the guest password you share with your guests
 
 Edits show in the preview right away and are saved with the Save button (Cancel undoes them). The couple get an Admin link on the landing page and in the guest menu, so there is always a way back.
@@ -54,7 +54,7 @@ Invitations go out through [Resend](https://resend.com). The free plan sends 100
    npx wrangler secret put RESEND_WEBHOOK_SECRET
    ```
 
-Then open Guest list, choose Send invitations, send yourself a test, and send. Each send covers at most 100 guests; send the rest the next day.
+Then open Guest list, choose Send emails, pick Save the date, Invitation or Thank you, send yourself a test, and send. Turn on the sign-up link in Guest list first if the save the date should let guests add themselves; renew the link if it spreads too far (at most 30 sign-ups an hour). Each send covers at most 100 guests; send the rest the next day.
 
 ## Tests
 

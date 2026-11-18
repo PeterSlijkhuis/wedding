@@ -135,7 +135,18 @@ export function validateInvite(input) {
   const subject = text(input.subject, 150, "Subject");
   const message = text(input.message, 5000, "Message");
   if (!subject || !message) throw new HttpError(400, "Write a subject and a message");
-  return { from, replyTo: email(input.replyTo), subject, message, button: text(input.button, 60, "Button") || "Open our website" };
+  const kind = ["savedate", "invitation", "thanks"].includes(input.kind) ? input.kind : "invitation";
+  return { kind, from, replyTo: email(input.replyTo), subject, message, button: text(input.button, 60, "Button") || "Open our website" };
+}
+
+/** A guest signing themselves up from the save-the-date link: their own name and email, plus who comes with them. */
+export function validateSignup(input) {
+  const name = text(input.name, 100, "Name");
+  const address = email(input.email);
+  if (!name || !address) throw new HttpError(400, "Enter your name and email");
+  const others = String(input.others ?? "").split(/\r?\n/).map((n) => text(n, 100, "Name")).filter(Boolean);
+  if (others.length > 10) throw new HttpError(400, "At most 10 people with you");
+  return { name, email: address, others };
 }
 
 export const MAX_IMPORT = 500;

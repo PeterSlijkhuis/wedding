@@ -279,11 +279,15 @@ const mark = (g) => (g.attending === null ? "" : g.attending ? " ✓" : " ✗");
 const rsvpKey = (g) => (g.attending === null ? "none" : g.attending ? "yes" : "no");
 const RSVP_LABEL = { yes: "admin.stat.attending", no: "admin.stat.declined", none: "admin.stat.noReply" };
 let parties = [];
+const KINDS = ["savedate", "invitation", "thanks"];
 const EMAIL_CLASS = { opened: "yes", clicked: "yes", bounced: "no", complained: "no" };
 let shownGuests = []; // guests in the table right now (after search and filter), for "send to the guests shown"
 
 async function renderGuests() {
-  ({ parties } = await get("/api/admin/parties"));
+  const [data, emails] = await Promise.all([get("/api/admin/parties"), get("/api/admin/emails")]);
+  ({ parties } = data);
+  signup = emails.signup;
+  drawSignup();
   drawGuestRows();
 }
 
@@ -302,10 +306,12 @@ function drawGuestRows() {
       const others = p.guests.filter((x) => x !== g).map((x) => x.name).join(", ");
       rows.push(el("tr", { class: i === 0 ? "first" : null, tabindex: "0", title: t("tip.editGuest"),
         onclick: () => openGuest(p, g), onkeydown: (e) => { if (e.key === "Enter") openGuest(p, g); } },
-      el("td", {}, el("b", {}, g.name)),
+      el("td", {}, el("b", {}, g.name), p.source === "signup" ? el("span", { class: "pill small-pill" }, t("admin.badge.signup")) : null),
       el("td", { class: "group" }, others),
       el("td", {}, g.email),
-      el("td", {}, g.emailStatus ? el("span", { class: `pill ${EMAIL_CLASS[g.emailStatus] ?? ""}`, title: g.emailAt ? `${g.emailAt} UTC` : null }, t(`admin.email.${g.emailStatus}`)) : ""),
+      el("td", {}, el("div", { class: "emails" }, ...KINDS.filter((k) => g.emails[k]).map((k) => el("span", {
+        class: `pill ${EMAIL_CLASS[g.emails[k].status] ?? ""}`, title: g.emails[k].at ? `${g.emails[k].at} UTC` : null,
+      }, `${t(`admin.kind.${k}`)}: ${t(`admin.email.${g.emails[k].status}`)}`)))),
       el("td", {}, el("span", { class: `pill ${rsvpKey(g)}` }, t(RSVP_LABEL[rsvpKey(g)]))),
       el("td", {}, g.meal),
       el("td", {}, g.dietary)));
@@ -364,8 +370,8 @@ $("g-delete").onclick = () => {
 // CSV in the same columns the import reads, so an export can be edited in Excel and imported into a fresh site.
 const csvCell = (v) => (/[",;\n\r]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
 $("csv-export").onclick = () => {
-  const lines = [["group", "name", "email", "rsvp", "meal", "dietary", "message", "invitation"]];
-  for (const p of parties) for (const g of p.guests) lines.push([p.id, g.name, g.email, rsvpKey(g), g.meal, g.dietary, p.note, g.emailStatus]);
+  const lines = [["group", "name", "email", "rsvp", "meal", "dietary", "message", ...KINDS]];
+  for (const p of parties) for (const g of p.guests) lines.push([p.id, g.name, g.email, rsvpKey(g), g.meal, g.dietary, p.note, ...KINDS.map((k) => g.emails[k]?.status ?? "")]);
   const blob = new Blob(["﻿" + lines.map((l) => l.map(csvCell).join(",")).join("\r\n")], { type: "text/csv" });
   el("a", { href: URL.createObjectURL(blob), download: "guests.csv" }).click();
 };
@@ -385,42 +391,58 @@ $("csv-file").onchange = async (e) => {
   }
 };
 
-// ---------- Invitation emails ----------
-let inviteMax = 100;
+// ---------- Emails: save the date, invitation, thank you ----------
+let emailMax = 100;
+let emailSettings = { from: "", replyTo: "", drafts: {} };
+const kind = () => $("i-kind").value;
 const recipients = () => {
   const all = parties.flatMap((p) => p.guests).filter((g) => g.email);
   const who = $("i-who").value;
-  return who === "new" ? all.filter((g) => !g.emailStatus) : who === "shown" ? shownGuests.filter((g) => g.email) : all;
+  if (who === "new") return all.filter((g) => !g.emails[kind()]);
+  if (who === "attending") return all.filter((g) => g.attending);
+  return who === "shown" ? shownGuests.filter((g) => g.email) : all;
 };
 const countRecipients = () => {
   const n = recipients().length;
-  $("i-count").textContent = fmt(t(n > inviteMax ? "admin.invite.tooMany" : "admin.invite.count"), { n, max: inviteMax });
+  $("i-count").textContent = fmt(t(n > emailMax ? "admin.invite.tooMany" : "admin.invite.count"), { n, max: emailMax });
 };
+/** Show the saved draft of the chosen kind, keeping what was typed for the other kinds. */
+function fillDraft() {
+  const d = emailSettings.drafts[kind()] ?? {};
+  $("i-subject").value = d.subject ?? `${site.names}: ${t(`admin.kind.${kind()}`)}`;
+  $("i-message").value = d.message ?? "";
+  $("i-button").value = d.button ?? t(kind() === "savedate" && $("signup-on").checked ? "signup.submit" : "admin.invite.buttonDefault");
+  countRecipients();
+}
+const keepDraft = () => {
+  emailSettings.drafts[$("i-kind").dataset.shown] = { subject: $("i-subject").value, message: $("i-message").value, button: $("i-button").value };
+};
+$("i-kind").onchange = () => { keepDraft(); $("i-kind").dataset.shown = kind(); fillDraft(); };
 $("i-who").onchange = countRecipients;
 $("invite-open").onclick = async () => {
-  const { draft, ready, tracking, max } = await get("/api/admin/invite");
-  inviteMax = max;
-  $("invite-setup").hidden = ready;
-  $("invite-tracking").hidden = !ready || tracking;
-  $("i-from").value = draft.from ?? "";
-  $("i-reply").value = draft.replyTo ?? "";
-  $("i-subject").value = draft.subject ?? site.names;
-  $("i-message").value = draft.message ?? "";
-  $("i-button").value = draft.button ?? t("admin.invite.buttonDefault");
+  const data = await get("/api/admin/emails");
+  emailMax = data.max;
+  emailSettings = data.settings;
+  $("invite-setup").hidden = data.ready;
+  $("invite-tracking").hidden = !data.ready || data.tracking;
+  $("i-from").value = emailSettings.from;
+  $("i-reply").value = emailSettings.replyTo;
+  $("i-kind").dataset.shown = kind();
   $("i-status").textContent = "";
-  countRecipients();
+  fillDraft();
   $("invite-dialog").showModal();
 };
 $("i-cancel").onclick = () => $("invite-dialog").close();
-const inviteDraft = () => ({ from: $("i-from").value, replyTo: $("i-reply").value, subject: $("i-subject").value,
+const emailDraft = () => ({ kind: kind(), from: $("i-from").value, replyTo: $("i-reply").value, subject: $("i-subject").value,
   message: $("i-message").value, button: $("i-button").value, lang: document.documentElement.lang });
-async function sendInvite(extra, confirmText) {
+async function sendEmail(extra, confirmText) {
   const status = $("i-status");
   if (confirmText && !confirm(confirmText)) return;
   try {
     status.className = "status";
     status.textContent = t("admin.invite.sending");
-    const { sent } = await post("/api/admin/invite", { ...inviteDraft(), ...extra });
+    const { sent } = await post("/api/admin/emails/send", { ...emailDraft(), ...extra });
+    keepDraft();
     status.textContent = fmt(t("admin.invite.sent"), { n: sent });
     if (!extra.test) await renderGuests();
     countRecipients();
@@ -431,13 +453,33 @@ async function sendInvite(extra, confirmText) {
 }
 $("i-test-btn").onclick = () => {
   if (!$("i-test").reportValidity() || !$("i-test").value) return $("i-test").focus();
-  sendInvite({ test: $("i-test").value });
+  sendEmail({ test: $("i-test").value });
 };
 $("invite-form").onsubmit = (e) => {
   e.preventDefault();
   const list = recipients();
-  if (!list.length || list.length > inviteMax) return countRecipients();
-  sendInvite({ guestIds: list.map((g) => g.id) }, fmt(t("admin.invite.confirm"), { n: list.length }));
+  if (!list.length || list.length > emailMax) return countRecipients();
+  sendEmail({ guestIds: list.map((g) => g.id) }, fmt(t("admin.invite.confirm"), { n: list.length }));
+};
+
+// ---------- Sign-up link ----------
+let signup = { enabled: false, code: "" };
+const signupUrl = () => `${location.origin}/signup?code=${signup.code}`;
+function drawSignup() {
+  $("signup-on").checked = signup.enabled;
+  $("signup-url").textContent = signup.enabled ? signupUrl() : "";
+  $("signup-copy").hidden = $("signup-renew").hidden = !signup.enabled;
+}
+async function changeSignup(change) {
+  signup = await post("/api/admin/signup", change);
+  drawSignup();
+}
+$("signup-on").onchange = () => changeSignup({ enabled: $("signup-on").checked });
+$("signup-renew").onclick = () => changeSignup({ renew: true });
+$("signup-copy").onclick = async () => {
+  await navigator.clipboard.writeText(signupUrl());
+  $("signup-copy").textContent = t("admin.copied");
+  setTimeout(() => { $("signup-copy").textContent = t("admin.signup.copy"); }, 2000);
 };
 
 async function renderRsvp() {

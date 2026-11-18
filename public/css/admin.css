@@ -199,3 +199,9 @@ button.danger { color: #b3261e; }
 .setup { background: #fff6dc; border-radius: 12px; padding: 0.8rem 1rem; font-size: 0.9rem; }
 .row-inline button { white-space: nowrap; }
 dialog.guest { max-height: 92vh; }
+.signup-panel { border: 1px solid #e8e9df; border-radius: 14px; padding: 0.8rem 1rem; margin: 0 0 1rem; }
+.signup-panel p { margin: 0.3rem 0 0.6rem; }
+.signup-panel code { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 0.85rem; }
+.signup-panel .row-inline { flex-wrap: wrap; gap: 0.5rem; }
+.guest-table .emails { display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; }
+.small-pill { margin-left: 0.4rem; font-size: 0.72rem; padding: 0 0.5rem; vertical-align: 1px; }

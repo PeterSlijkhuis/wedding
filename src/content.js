@@ -1,7 +1,9 @@
 // API handlers for site details, text pages, RSVP and the guest list.
 import { HttpError, json, body, getSetting, setSetting } from "./util.js";
 import { invitationEmail, sendBatch, verifyWebhook, nextStatus, MAX_PER_SEND } from "./email.js";
-import { validateSite, validatePage, validateRsvp, validatePhoto, validateGuest, csvGuests, validateInvite, email, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
+import { PALETTES, FONTS, resolveDesign } from "../public/js/designs.js";
+import { safeEqual } from "./auth.js";
+import { validateSite, validatePage, validateRsvp, validatePhoto, validateGuest, csvGuests, validateInvite, validateSignup, email, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
 
 const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", location: "", countdown: false, tagline: {}, theme: "sage", palette: "", font: "", layout: "", art: "", motion: "", accent: "", coverPhoto: 0, coverShape: "rounded", pagePhotos: {}, photoFocus: {}, meals: [] };
 
@@ -21,22 +23,48 @@ const needGuest = (role) => need(role, "guest", "admin");
 const needAdmin = (role) => need(role, "admin");
 
 /** Parties with their guests. ids = null loads every party. */
-async function loadParties(env, ids = null) {
+async function loadParties(env, ids = null, withEmails = false) {
   const where = ids ? `WHERE p.id IN (${ids.map(() => "?").join(",")})` : "";
   const { results } = await env.DB.prepare(
-    `SELECT p.id AS party_id, p.note, p.responded_at, g.id, g.name, g.email, g.attending, g.meal, g.dietary, g.email_status, g.email_at
+    `SELECT p.id AS party_id, p.note, p.responded_at, p.source, g.id, g.name, g.email, g.attending, g.meal, g.dietary
      FROM parties p LEFT JOIN guests g ON g.party_id = p.id ${where} ORDER BY p.id, g.id`,
   ).bind(...(ids ?? [])).all();
   const parties = new Map();
   for (const r of results) {
-    if (!parties.has(r.party_id)) parties.set(r.party_id, { id: r.party_id, note: r.note, responded: !!r.responded_at, guests: [] });
+    if (!parties.has(r.party_id)) parties.set(r.party_id, { id: r.party_id, note: r.note, responded: !!r.responded_at, source: r.source, guests: [] });
     if (r.id !== null) {
       parties.get(r.party_id).guests.push({
-        id: r.id, name: r.name, email: r.email, emailStatus: r.email_status, emailAt: r.email_at, attending: r.attending === null ? null : !!r.attending, meal: r.meal, dietary: r.dietary,
+        id: r.id, name: r.name, email: r.email, emails: {}, attending: r.attending === null ? null : !!r.attending, meal: r.meal, dietary: r.dietary,
       });
     }
   }
+  if (withEmails) { // admin only: which emails each guest got, by kind
+    const { results: sent } = await env.DB.prepare("SELECT guest_id, kind, status, at FROM emails").all();
+    const byGuest = new Map([...parties.values()].flatMap((p) => p.guests.map((g) => [g.id, g])));
+    for (const e of sent) if (byGuest.has(e.guest_id)) byGuest.get(e.guest_id).emails[e.kind] = { status: e.status, at: e.at };
+  }
   return [...parties.values()];
+}
+
+/** The site's colors and fonts for emails. */
+function emailDesign(site) {
+  const d = resolveDesign(site);
+  const p = PALETTES[d.palette], f = FONTS[d.font];
+  return { bg: p.bg, card: p.card, text: p.text, muted: p.muted, accent: site.accent || p.accent, onAccent: p.onAccent, display: f.display, body: f.body };
+}
+
+const EMAIL_SETTINGS = { from: "", replyTo: "", drafts: {} };
+async function loadEmailSettings(env) {
+  const saved = JSON.parse((await getSetting(env, "emails")) || "null");
+  if (saved) return { ...EMAIL_SETTINGS, ...saved };
+  const old = JSON.parse((await getSetting(env, "invite")) || "null"); // drafts saved before there were three kinds
+  return old ? { from: old.from, replyTo: old.replyTo, drafts: { invitation: { subject: old.subject, message: old.message, button: old.button } } } : EMAIL_SETTINGS;
+}
+
+const SIGNUP_PER_HOUR = 30;
+const newCode = () => [...crypto.getRandomValues(new Uint8Array(9))].map((b) => b.toString(36).padStart(2, "0")).join("").slice(0, 12);
+async function loadSignup(env) {
+  return { enabled: false, code: "", ...JSON.parse((await getSetting(env, "signup")) || "{}") };
 }
 
 const routes = {
@@ -166,7 +194,7 @@ const routes = {
 
   "GET /api/admin/parties": async ({ env, role }) => {
     needAdmin(role);
-    return json({ parties: await loadParties(env) });
+    return json({ parties: await loadParties(env, null, true) });
   },
   "POST /api/admin/parties": async ({ request, env, role }) => {
     needAdmin(role);
@@ -200,6 +228,7 @@ const routes = {
     needAdmin(role);
     const id = Number((await body(request)).id);
     await env.DB.batch([ // a group without guests is removed with its last guest
+      env.DB.prepare("DELETE FROM emails WHERE guest_id = ?").bind(id),
       env.DB.prepare("DELETE FROM guests WHERE id = ?").bind(id),
       env.DB.prepare("DELETE FROM parties WHERE NOT EXISTS (SELECT 1 FROM guests WHERE party_id = parties.id)"),
     ]);
@@ -233,21 +262,27 @@ const routes = {
     ]);
     return json({ guests: rows.length, parties: partyIds.length });
   },
-  // ---------- Invitation emails (Resend) ----------
-  "GET /api/admin/invite": async ({ env, role }) => {
+  // ---------- Emails: save the date, invitation, thank you (Resend) ----------
+  "GET /api/admin/emails": async ({ env, role }) => {
     needAdmin(role);
-    const draft = JSON.parse((await getSetting(env, "invite")) || "{}");
-    return json({ draft, ready: !!env.RESEND_API_KEY, tracking: !!env.RESEND_WEBHOOK_SECRET, max: MAX_PER_SEND });
+    return json({ settings: await loadEmailSettings(env), signup: await loadSignup(env), ready: !!env.RESEND_API_KEY, tracking: !!env.RESEND_WEBHOOK_SECRET, max: MAX_PER_SEND });
   },
-  "POST /api/admin/invite": async ({ request, env, role, url }) => {
+  "POST /api/admin/emails/send": async ({ request, env, role, url }) => {
     needAdmin(role);
     const input = await body(request);
     const draft = validateInvite(input);
-    await setSetting(env, "invite", JSON.stringify(draft));
+    const settings = await loadEmailSettings(env);
+    settings.from = draft.from;
+    settings.replyTo = draft.replyTo;
+    settings.drafts[draft.kind] = { subject: draft.subject, message: draft.message, button: draft.button };
+    await setSetting(env, "emails", JSON.stringify(settings));
     const site = await loadSite(env);
     const lang = LANGS.includes(input.lang) ? input.lang : "en";
     const date = site.date ? new Intl.DateTimeFormat(lang, { dateStyle: "full", timeZone: "UTC" }).format(new Date(`${site.date}T12:00:00Z`)) : "";
-    const mail = invitationEmail({ names: site.names, date, location: site.location, message: draft.message, siteUrl: `${url.origin}/?lang=${lang}`, button: draft.button });
+    const signup = await loadSignup(env);
+    // A save the date links to the sign-up form while it is switched on; everything else links to the site.
+    const link = draft.kind === "savedate" && signup.enabled ? `${url.origin}/signup?code=${signup.code}&lang=${lang}` : `${url.origin}/?lang=${lang}`;
+    const mail = invitationEmail({ names: site.names, date, location: site.location, message: draft.message, siteUrl: link, button: draft.button, design: emailDesign(site) });
     const base = { from: draft.from, subject: draft.subject, html: mail.html, text: mail.text, ...(draft.replyTo ? { reply_to: draft.replyTo } : {}) };
     // env.RESEND_URL only exists in local tests, to point at a fake Resend.
     if (input.test) { // a test goes to one address and is not tracked
@@ -260,7 +295,10 @@ const routes = {
     const { results } = await env.DB.prepare(`SELECT id, email FROM guests WHERE email != '' AND id IN (${ids.map(() => "?").join(",")})`).bind(...ids).all();
     if (!results.length) throw new HttpError(400, "None of these guests has an email address");
     const emailIds = await sendBatch(env.RESEND_API_KEY, results.map((g) => ({ ...base, to: [g.email] })), env.RESEND_URL);
-    await env.DB.batch(results.map((g, i) => env.DB.prepare("UPDATE guests SET email_id = ?, email_status = 'sent', email_at = datetime('now') WHERE id = ?").bind(emailIds[i] ?? "", g.id)));
+    await env.DB.batch(results.map((g, i) => env.DB.prepare(
+      `INSERT INTO emails (guest_id, kind, resend_id, status, at) VALUES (?, ?, ?, 'sent', datetime('now'))
+       ON CONFLICT (guest_id, kind) DO UPDATE SET resend_id = excluded.resend_id, status = 'sent', at = excluded.at`,
+    ).bind(g.id, draft.kind, emailIds[i] ?? "")));
     return json({ sent: results.length });
   },
   // Resend calls this when an email is delivered, opened, clicked or bounced. Public, but signed.
@@ -269,15 +307,41 @@ const routes = {
     if (!(await verifyWebhook(env.RESEND_WEBHOOK_SECRET, request.headers, raw))) throw new HttpError(401, "Bad signature");
     const event = JSON.parse(raw);
     if (!event.data?.email_id) return json({ ok: true }); // not about an email we sent
-    const guest = await env.DB.prepare("SELECT id, email_status FROM guests WHERE email_id = ?").bind(String(event.data.email_id)).first();
-    const status = guest && nextStatus(guest.email_status, event.type);
-    if (status) await env.DB.prepare("UPDATE guests SET email_status = ?, email_at = datetime('now') WHERE id = ?").bind(status, guest.id).run();
+    const row = await env.DB.prepare("SELECT guest_id, kind, status FROM emails WHERE resend_id = ?").bind(String(event.data.email_id)).first();
+    const status = row && nextStatus(row.status, event.type);
+    if (status) await env.DB.prepare("UPDATE emails SET status = ?, at = datetime('now') WHERE guest_id = ? AND kind = ?").bind(status, row.guest_id, row.kind).run();
+    return json({ ok: true });
+  },
+
+  // ---------- Sign-up link: guests add themselves from the save the date ----------
+  "POST /api/admin/signup": async ({ request, env, role }) => {
+    needAdmin(role);
+    const input = await body(request);
+    const signup = await loadSignup(env);
+    if (typeof input.enabled === "boolean") signup.enabled = input.enabled;
+    if (input.renew || !signup.code) signup.code = newCode(); // a new code stops old links working
+    await setSetting(env, "signup", JSON.stringify(signup));
+    return json(signup);
+  },
+  "POST /api/signup": async ({ request, env }) => {
+    const input = await body(request);
+    const signup = await loadSignup(env);
+    if (!signup.enabled || !(await safeEqual(String(input.code ?? ""), signup.code))) throw new HttpError(403, "This sign-up link is not active");
+    const guest = validateSignup(input);
+    const { n } = await env.DB.prepare("SELECT COUNT(*) AS n FROM parties WHERE source = 'signup' AND created_at > datetime('now', '-1 hour')").first();
+    if (n >= SIGNUP_PER_HOUR) throw new HttpError(429, "Too many sign-ups right now. Please try again in an hour.");
+    const known = await env.DB.prepare("SELECT 1 FROM guests WHERE email = ?").bind(guest.email).first();
+    if (known) return json({ ok: true, already: true }); // already on the list: add nothing twice
+    const { meta } = await env.DB.prepare("INSERT INTO parties (note, source, created_at) VALUES ('', 'signup', datetime('now'))").run();
+    const insert = (name, address) => env.DB.prepare("INSERT INTO guests (party_id, name, name_key, email) VALUES (?, ?, ?, ?)").bind(meta.last_row_id, name, nameKey(name), address);
+    await env.DB.batch([insert(guest.name, guest.email), ...guest.others.map((name) => insert(name, ""))]);
     return json({ ok: true });
   },
   "POST /api/admin/parties/delete": async ({ request, env, role }) => {
     needAdmin(role);
     const id = Number((await body(request)).id);
     await env.DB.batch([
+      env.DB.prepare("DELETE FROM emails WHERE guest_id IN (SELECT id FROM guests WHERE party_id = ?)").bind(id),
       env.DB.prepare("DELETE FROM guests WHERE party_id = ?").bind(id),
       env.DB.prepare("DELETE FROM parties WHERE id = ?").bind(id),
     ]);

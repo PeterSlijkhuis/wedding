@@ -4,8 +4,8 @@ import { HttpError, json, body, getSetting, setSetting } from "./util.js";
 
 const COOKIE = "session";
 const SESSION_SECONDS = 30 * 24 * 3600;
-// Reachable without a password: the landing page, the login page and their assets.
-const PUBLIC_PATHS = ["/", "/index.html", "/login", "/login.html", "/favicon.ico"];
+// Reachable without a password: the landing page, the login page, the sign-up form (it checks its own code) and their assets.
+const PUBLIC_PATHS = ["/", "/index.html", "/login", "/login.html", "/signup", "/signup.html", "/favicon.ico"];
 const PUBLIC_PREFIXES = ["/css/", "/js/", "/i18n/", "/img/", "/fonts/"];
 
 export default {
