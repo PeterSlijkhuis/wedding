@@ -276,28 +276,120 @@ async function renderDashboard() {
 
 // ---------- Guests, RSVP, photos ----------
 const mark = (g) => (g.attending === null ? "" : g.attending ? " ✓" : " ✗");
+const rsvpKey = (g) => (g.attending === null ? "none" : g.attending ? "yes" : "no");
+const RSVP_LABEL = { yes: "admin.stat.attending", no: "admin.stat.declined", none: "admin.stat.noReply" };
+let parties = [];
 
 async function renderGuests() {
-  const { parties } = await get("/api/admin/parties");
-  if (!parties.length) return $("parties").replaceChildren(el("p", { class: "muted" }, t("admin.noGuests")));
-  $("parties").replaceChildren(...parties.map((p) => el("div", { class: "party" },
-    el("div", {}, p.guests.map((g) => g.name + mark(g)).join(", ")),
-    el("button", {
-      class: "link",
-      onclick: async () => {
-        if (!confirm(t("admin.confirmDelete"))) return;
-        await post("/api/admin/parties/delete", { id: p.id });
-        await renderGuests();
-      },
-    }, t("admin.delete")))));
+  ({ parties } = await get("/api/admin/parties"));
+  drawGuestRows();
 }
 
+/** Table of every guest, grouped by invitation, filtered by the search box and the RSVP filter. */
+function drawGuestRows() {
+  const query = $("guest-search").value.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
+  const filter = $("guest-filter").value;
+  const plain = (s) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+  const rows = [];
+  for (const p of parties) {
+    const matches = p.guests.filter((g) => (filter === "all" || rsvpKey(g) === filter)
+      && (!query || plain(`${g.name} ${g.email}`).includes(query)));
+    matches.forEach((g, i) => {
+      const others = p.guests.filter((x) => x !== g).map((x) => x.name).join(", ");
+      rows.push(el("tr", { class: i === 0 ? "first" : null, tabindex: "0", title: t("tip.editGuest"),
+        onclick: () => openGuest(p, g), onkeydown: (e) => { if (e.key === "Enter") openGuest(p, g); } },
+      el("td", {}, el("b", {}, g.name)),
+      el("td", { class: "group" }, others),
+      el("td", {}, g.email),
+      el("td", {}, el("span", { class: `pill ${rsvpKey(g)}` }, t(RSVP_LABEL[rsvpKey(g)]))),
+      el("td", {}, g.meal),
+      el("td", {}, g.dietary)));
+    });
+  }
+  const empty = parties.length ? t("admin.noMatches") : t("admin.noGuests");
+  $("guest-rows").replaceChildren(...(rows.length ? rows : [el("tr", {}, el("td", { colspan: "6", class: "muted" }, empty))]));
+}
+$("guest-search").oninput = drawGuestRows;
+$("guest-filter").onchange = drawGuestRows;
+
+let editing = null; // { party, guest } shown in the guest dialog
+function openGuest(party, guest) {
+  editing = { party, guest };
+  $("guest-title").textContent = guest.name;
+  $("g-name").value = guest.name;
+  $("g-email").value = guest.email;
+  $("g-rsvp").value = rsvpKey(guest);
+  $("g-meal").value = guest.meal;
+  $("g-dietary").value = guest.dietary;
+  $("g-meals").replaceChildren(...site.meals.map((m) => el("option", { value: m })));
+  $("g-yes").hidden = $("g-rsvp").value !== "yes";
+  const others = party.guests.filter((x) => x !== guest).map((x) => x.name + mark(x));
+  $("g-group").textContent = others.length ? `${t("admin.groupWith")} ${others.join(", ")}` : t("admin.groupAlone");
+  $("g-note").textContent = party.note ? `${t("admin.groupNote")}: “${party.note}”` : "";
+  $("g-add").value = "";
+  $("g-status").textContent = "";
+  $("guest-dialog").showModal();
+}
+$("g-rsvp").onchange = () => { $("g-yes").hidden = $("g-rsvp").value !== "yes"; };
+$("g-cancel").onclick = () => $("guest-dialog").close();
+
+async function guestAction(path, data) {
+  try {
+    await post(path, data);
+    $("guest-dialog").close();
+    await renderGuests();
+  } catch (err) {
+    $("g-status").className = "status error";
+    $("g-status").textContent = err.message;
+  }
+}
+$("guest-form").onsubmit = (e) => {
+  e.preventDefault();
+  const rsvp = $("g-rsvp").value;
+  guestAction("/api/admin/guests/update", {
+    id: editing.guest.id, name: $("g-name").value, email: $("g-email").value,
+    attending: rsvp === "none" ? null : rsvp === "yes", meal: $("g-meal").value, dietary: $("g-dietary").value,
+  });
+};
+$("g-add-btn").onclick = () => guestAction("/api/admin/guests/add", { partyId: editing.party.id, name: $("g-add").value });
+$("g-delete").onclick = () => {
+  if (confirm(fmt(t("admin.confirmDeleteGuest"), { name: editing.guest.name }))) guestAction("/api/admin/guests/delete", { id: editing.guest.id });
+};
+
+// CSV in the same columns the import reads, so an export can be edited in Excel and imported into a fresh site.
+const csvCell = (v) => (/[",;\n\r]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
+$("csv-export").onclick = () => {
+  const lines = [["group", "name", "email", "rsvp", "meal", "dietary", "message"]];
+  for (const p of parties) for (const g of p.guests) lines.push([p.id, g.name, g.email, rsvpKey(g), g.meal, g.dietary, p.note]);
+  const blob = new Blob(["﻿" + lines.map((l) => l.map(csvCell).join(",")).join("\r\n")], { type: "text/csv" });
+  el("a", { href: URL.createObjectURL(blob), download: "guests.csv" }).click();
+};
+$("csv-file").onchange = async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const status = $("guest-status");
+  try {
+    const n = await post("/api/admin/guests/import", { csv: await file.text() });
+    status.className = "status";
+    status.textContent = fmt(t("admin.imported"), { n: n.guests, p: n.parties });
+    await renderGuests();
+  } catch (err) {
+    status.className = "status error";
+    status.textContent = err.message;
+  }
+};
+
 async function renderRsvp() {
-  const [status, { parties }] = await Promise.all([get("/api/admin/status"), get("/api/admin/parties")]);
+  const [status, data] = await Promise.all([get("/api/admin/status"), get("/api/admin/parties")]);
+  ({ parties } = data);
   const stat = (n, label) => el("div", {}, el("b", {}, String(n)), label);
   $("stats").replaceChildren(
     stat(status.guests, t("admin.stat.guests")), stat(status.attending, t("admin.stat.attending")),
     stat(status.declined, t("admin.stat.declined")), stat(status.guests - status.attending - status.declined, t("admin.stat.noReply")));
+  const meals = new Map();
+  for (const p of parties) for (const g of p.guests) if (g.attending && g.meal) meals.set(g.meal, (meals.get(g.meal) ?? 0) + 1);
+  $("meal-counts").replaceChildren(...[...meals].map(([meal, n]) => el("span", { class: "pill" }, `${meal}: ${n}`)));
   if (!parties.length) return $("answers").replaceChildren(el("p", { class: "muted" }, t("admin.noGuests")));
   $("answers").replaceChildren(...parties.map((p) => el("div", { class: "answer" },
     ...p.guests.map((g) => el("div", {}, g.name + mark(g),
@@ -463,8 +555,8 @@ const VIEWS = {
   design: { form: "design", preview: "/home", title: "admin.tile.design" },
   pages: { form: "page", preview: () => pageHref($("slug").value), title: "admin.tile.website" },
   photos: { preview: "/home", title: "admin.tile.photos", load: renderPhotos },
-  guests: { preview: "/rsvp", title: "admin.tile.guests", load: renderGuests },
-  rsvp: { preview: "/rsvp", title: "admin.tile.rsvp", load: renderRsvp },
+  guests: { preview: "/rsvp", title: "admin.tile.guests", load: renderGuests, wide: true },
+  rsvp: { preview: "/rsvp", title: "admin.tile.rsvp", load: renderRsvp, wide: true },
   privacy: { form: "privacy", preview: "/", title: "admin.tile.privacy" },
 };
 
@@ -473,7 +565,7 @@ async function show() {
   const view = name in VIEWS ? name : "dashboard";
   const config = VIEWS[view];
   currentForm = config.form ?? null;
-  document.body.dataset.mode = view === "dashboard" ? "dashboard" : "editor";
+  document.body.dataset.mode = view === "dashboard" ? "dashboard" : config.wide ? "wide" : "editor";
   $("drawer").hidden = true;
   $("editor-top").hidden = view === "dashboard";
   $("savebar").hidden = !currentForm;

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { nameKey, validateSite, validateRsvp, parseNames, validatePage } from "../src/validate.js";
+import { nameKey, validateSite, validateRsvp, parseNames, validatePage, validateGuest, parseCsv, csvGuests } from "../src/validate.js";
 
 const rejects = (fn, pattern) => assert.throws(fn, (err) => err.status === 400 && pattern.test(err.message));
 
@@ -69,4 +69,26 @@ test("validatePhoto accepts JPEG only and caps size", () => {
   rejects(() => validatePhoto(Uint8Array.from([0x89, 0x50, 0x4e, 0x47]).buffer), /JPEG/); // PNG
   rejects(() => validatePhoto(new ArrayBuffer(0)), /JPEG/);
   rejects(() => validatePhoto(new Uint8Array(2_000_001).fill(0xff).buffer), /under/);
+});
+
+test("validateGuest", () => {
+  assert.deepEqual(validateGuest({ name: " Ana ", email: "Ana@Example.com", attending: false, meal: "Fish" }),
+    { name: "Ana", email: "ana@example.com", attending: false, meal: "", dietary: "" });
+  assert.equal(validateGuest({ name: "Ana", attending: null }).attending, null);
+  rejects(() => validateGuest({ name: "", attending: null }), /name/);
+  rejects(() => validateGuest({ name: "Ana", email: "nope", attending: null }), /email/);
+  rejects(() => validateGuest({ name: "Ana", attending: "yes" }), /RSVP/);
+});
+
+test("parseCsv handles quotes, newlines in quotes and semicolons", () => {
+  assert.deepEqual(parseCsv('﻿name,email\r\n"Smith, Jo",jo@x.nl\n"say ""hi""\nthere",\n\n'),
+    [["name", "email"], ["Smith, Jo", "jo@x.nl"], ['say "hi"\nthere', ""]]);
+  assert.deepEqual(parseCsv("naam;groep\nAna;1"), [["naam", "groep"], ["Ana", "1"]]);
+});
+
+test("csvGuests reads name, email and group in any language and order", () => {
+  assert.deepEqual(csvGuests("Groep;Naam;E-mail\nA;Ana;ana@x.nl\nA;Marko;\n;Solo;"),
+    [{ name: "Ana", email: "ana@x.nl", group: "A" }, { name: "Marko", email: "", group: "A" }, { name: "Solo", email: "", group: "" }]);
+  rejects(() => csvGuests("email\nx@y.z"), /column called name/);
+  rejects(() => csvGuests("name,email\nAna,bad"), /Row 2/);
 });

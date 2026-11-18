@@ -1,6 +1,6 @@
 // API handlers for site details, text pages, RSVP and the guest list.
 import { HttpError, json, body, getSetting, setSetting } from "./util.js";
-import { validateSite, validatePage, validateRsvp, validatePhoto, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
+import { validateSite, validatePage, validateRsvp, validatePhoto, validateGuest, csvGuests, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
 
 const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", location: "", countdown: false, tagline: {}, theme: "sage", palette: "", font: "", layout: "", art: "", motion: "", accent: "", coverPhoto: 0, coverShape: "rounded", pagePhotos: {}, photoFocus: {}, meals: [] };
 
@@ -23,7 +23,7 @@ const needAdmin = (role) => need(role, "admin");
 async function loadParties(env, ids = null) {
   const where = ids ? `WHERE p.id IN (${ids.map(() => "?").join(",")})` : "";
   const { results } = await env.DB.prepare(
-    `SELECT p.id AS party_id, p.note, p.responded_at, g.id, g.name, g.attending, g.meal, g.dietary
+    `SELECT p.id AS party_id, p.note, p.responded_at, g.id, g.name, g.email, g.attending, g.meal, g.dietary
      FROM parties p LEFT JOIN guests g ON g.party_id = p.id ${where} ORDER BY p.id, g.id`,
   ).bind(...(ids ?? [])).all();
   const parties = new Map();
@@ -31,7 +31,7 @@ async function loadParties(env, ids = null) {
     if (!parties.has(r.party_id)) parties.set(r.party_id, { id: r.party_id, note: r.note, responded: !!r.responded_at, guests: [] });
     if (r.id !== null) {
       parties.get(r.party_id).guests.push({
-        id: r.id, name: r.name, attending: r.attending === null ? null : !!r.attending, meal: r.meal, dietary: r.dietary,
+        id: r.id, name: r.name, email: r.email, attending: r.attending === null ? null : !!r.attending, meal: r.meal, dietary: r.dietary,
       });
     }
   }
@@ -163,7 +163,6 @@ const routes = {
     return json({ ok: true });
   },
 
-  // Minimal guest list for now; CSV import and the full dashboard come in the next step.
   "GET /api/admin/parties": async ({ env, role }) => {
     needAdmin(role);
     return json({ parties: await loadParties(env) });
@@ -175,6 +174,63 @@ const routes = {
     await env.DB.batch(names.map((n) =>
       env.DB.prepare("INSERT INTO guests (party_id, name, name_key) VALUES (?, ?, ?)").bind(meta.last_row_id, n, nameKey(n))));
     return json({ ok: true });
+  },
+  "POST /api/admin/guests/update": async ({ request, env, role }) => {
+    needAdmin(role);
+    const input = await body(request);
+    const g = validateGuest(input);
+    const attending = g.attending === null ? null : g.attending ? 1 : 0;
+    const { meta } = await env.DB.prepare("UPDATE guests SET name = ?, name_key = ?, email = ?, attending = ?, meal = ?, dietary = ? WHERE id = ?")
+      .bind(g.name, nameKey(g.name), g.email, attending, g.meal, g.dietary, Number(input.id)).run();
+    if (!meta.changes) throw new HttpError(404, "Guest not found");
+    return json({ ok: true });
+  },
+  "POST /api/admin/guests/add": async ({ request, env, role }) => {
+    needAdmin(role);
+    const input = await body(request);
+    const g = validateGuest({ name: input.name, email: input.email, attending: null });
+    const party = await env.DB.prepare("SELECT id FROM parties WHERE id = ?").bind(Number(input.partyId)).first();
+    if (!party) throw new HttpError(404, "Group not found");
+    await env.DB.prepare("INSERT INTO guests (party_id, name, name_key, email) VALUES (?, ?, ?, ?)")
+      .bind(party.id, g.name, nameKey(g.name), g.email).run();
+    return json({ ok: true });
+  },
+  "POST /api/admin/guests/delete": async ({ request, env, role }) => {
+    needAdmin(role);
+    const id = Number((await body(request)).id);
+    await env.DB.batch([ // a group without guests is removed with its last guest
+      env.DB.prepare("DELETE FROM guests WHERE id = ?").bind(id),
+      env.DB.prepare("DELETE FROM parties WHERE NOT EXISTS (SELECT 1 FROM guests WHERE party_id = parties.id)"),
+    ]);
+    return json({ ok: true });
+  },
+  // CSV import: one batch of multi-row inserts with explicit ids, so even 500 guests stay a handful of queries.
+  "POST /api/admin/guests/import": async ({ request, env, role }) => {
+    needAdmin(role);
+    const guests = csvGuests((await body(request)).csv);
+    const { max } = await env.DB.prepare("SELECT COALESCE(MAX(id), 0) AS max FROM parties").first();
+    const groupIds = new Map();
+    let next = max;
+    const rows = guests.map((g) => {
+      const key = g.group || Symbol("own group");
+      if (!groupIds.has(key)) groupIds.set(key, ++next);
+      return [groupIds.get(key), g.name, nameKey(g.name), g.email];
+    });
+    const partyIds = [...groupIds.values()];
+    const insert = (sql, list, width) => { // D1 allows at most 100 bound values per query
+      const out = [];
+      const per = Math.floor(100 / width);
+      for (let i = 0; i < list.length; i += per) {
+        const chunk = list.slice(i, i + per);
+        out.push(env.DB.prepare(sql + chunk.map(() => `(${Array(width).fill("?").join(",")})`).join(",")).bind(...chunk.flat()));
+      }
+      return out;
+    };
+    await env.DB.batch([
+      ...insert("INSERT INTO parties (id) VALUES ", partyIds.map((id) => [id]), 1),
+      ...insert("INSERT INTO guests (party_id, name, name_key, email) VALUES ", rows, 4),
+    ]);
+    return json({ guests: rows.length, parties: partyIds.length });
   },
   "POST /api/admin/parties/delete": async ({ request, env, role }) => {
     needAdmin(role);

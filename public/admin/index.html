@@ -118,8 +118,29 @@
 
       <section data-view="guests">
         <h2 data-i18n="admin.tile.guests"></h2>
-        <div id="parties"></div>
-        <form id="add-party" style="margin-top:1rem">
+        <div class="guest-tools">
+          <input type="search" id="guest-search" data-i18n-placeholder="admin.search" data-i18n-title="tip.search">
+          <select id="guest-filter" data-i18n-title="tip.filter">
+            <option value="all" data-i18n="admin.filter.all"></option>
+            <option value="yes" data-i18n="admin.stat.attending"></option>
+            <option value="no" data-i18n="admin.stat.declined"></option>
+            <option value="none" data-i18n="admin.stat.noReply"></option>
+          </select>
+          <button type="button" class="ghost" id="csv-export" data-i18n="admin.csvExport" data-i18n-title="tip.csvExport"></button>
+          <label class="btn ghost" for="csv-file" data-i18n-title="tip.csvImport"><span data-i18n="admin.csvImport"></span><input type="file" id="csv-file" accept=".csv,text/csv" hidden></label>
+        </div>
+        <p class="muted small" data-i18n="admin.csvHelp"></p>
+        <p class="status" id="guest-status" role="status"></p>
+        <div class="table-wrap">
+          <table class="guest-table">
+            <thead><tr>
+              <th data-i18n="admin.col.name"></th><th data-i18n="admin.col.group"></th><th data-i18n="admin.col.email"></th>
+              <th data-i18n="admin.col.rsvp"></th><th data-i18n="admin.col.meal"></th><th data-i18n="admin.col.dietary"></th>
+            </tr></thead>
+            <tbody id="guest-rows"></tbody>
+          </table>
+        </div>
+        <form id="add-party" style="margin-top:1.5rem">
           <label for="party-names" data-i18n="admin.partyNames"></label>
           <textarea id="party-names" rows="3" required></textarea>
           <p class="status" role="status"></p>
@@ -130,6 +151,7 @@
       <section data-view="rsvp">
         <h2 data-i18n="admin.tile.rsvp"></h2>
         <div class="stats" id="stats"></div>
+        <div class="meal-counts" id="meal-counts"></div>
         <div id="answers"></div>
       </section>
 
@@ -177,6 +199,38 @@
       <button type="button" class="ghost" id="focus-cancel" data-i18n="admin.cancel"></button>
       <button type="button" id="focus-save" data-i18n="admin.save"></button>
     </div>
+  </dialog>
+  <dialog class="focus guest" id="guest-dialog">
+    <form id="guest-form">
+      <h2 id="guest-title"></h2>
+      <label for="g-name" data-i18n="admin.col.name"></label>
+      <input id="g-name" maxlength="100" required>
+      <label for="g-email" data-i18n="admin.col.email"></label>
+      <input id="g-email" type="email" maxlength="200">
+      <label for="g-rsvp" data-i18n="admin.col.rsvp"></label>
+      <select id="g-rsvp">
+        <option value="none" data-i18n="admin.stat.noReply"></option>
+        <option value="yes" data-i18n="admin.stat.attending"></option>
+        <option value="no" data-i18n="admin.stat.declined"></option>
+      </select>
+      <div class="row" id="g-yes">
+        <div><label for="g-meal" data-i18n="admin.col.meal"></label><input id="g-meal" maxlength="60" list="g-meals"><datalist id="g-meals"></datalist></div>
+        <div><label for="g-dietary" data-i18n="admin.col.dietary"></label><input id="g-dietary" maxlength="300"></div>
+      </div>
+      <p class="muted" id="g-group"></p>
+      <p class="muted" id="g-note"></p>
+      <div class="row-inline">
+        <input id="g-add" maxlength="100" data-i18n-placeholder="admin.addToGroup">
+        <button type="button" class="ghost" id="g-add-btn" data-i18n="admin.add" data-i18n-title="tip.addToGroup"></button>
+      </div>
+      <p class="status" id="g-status" role="status"></p>
+      <div class="focus-actions">
+        <button type="button" class="link danger" id="g-delete" data-i18n="admin.deleteGuest"></button>
+        <span class="spacer"></span>
+        <button type="button" class="ghost" id="g-cancel" data-i18n="admin.cancel"></button>
+        <button type="submit" id="g-save" data-i18n="admin.save"></button>
+      </div>
+    </form>
   </dialog>
   <script type="module" src="/admin/admin.js"></script>
 </body>

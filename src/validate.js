@@ -87,6 +87,68 @@ export function parseNames(input) {
   return names;
 }
 
+function email(value) {
+  const s = text(value, 200, "Email");
+  if (s && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) throw new HttpError(400, `"${s}" does not look like an email address`);
+  return s.toLowerCase();
+}
+
+/** One guest as the couple edits it in the guest list. attending: true, false or null (no reply). */
+export function validateGuest(input) {
+  const name = text(input.name, 100, "Name");
+  if (!name) throw new HttpError(400, "Enter a name");
+  if (![true, false, null].includes(input.attending)) throw new HttpError(400, "RSVP must be yes, no or no reply");
+  const yes = input.attending === true;
+  return {
+    name, email: email(input.email), attending: input.attending,
+    meal: yes ? text(input.meal, 60, "Meal") : "", dietary: yes ? text(input.dietary, 300, "Dietary needs") : "",
+  };
+}
+
+/** Split CSV text into rows of cells. Handles quotes, and semicolons as Excel writes them in Dutch and Spanish. */
+export function parseCsv(input) {
+  const src = String(input ?? "").replace(/^﻿/, "");
+  const firstLine = src.split(/\r?\n/, 1)[0];
+  const sep = (firstLine.match(/;/g) || []).length > (firstLine.match(/,/g) || []).length ? ";" : ",";
+  const rows = [];
+  let row = [], cell = "", quoted = false;
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (quoted) {
+      if (c === '"' && src[i + 1] === '"') { cell += '"'; i++; } else if (c === '"') quoted = false; else cell += c;
+    } else if (c === '"') quoted = true;
+    else if (c === sep) { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && src[i + 1] === "\n") i++;
+      row.push(cell); rows.push(row); row = []; cell = "";
+    } else cell += c;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter((r) => r.some((c) => c.trim()));
+}
+
+export const MAX_IMPORT = 500;
+
+/** Guests from an uploaded CSV with a header row: name (required), email, group. Same group = one invitation. */
+export function csvGuests(input) {
+  const [header, ...rows] = parseCsv(input);
+  if (!header) throw new HttpError(400, "The file is empty");
+  const col = (...names) => header.findIndex((h) => names.includes(nameKey(h)));
+  const [n, e, g] = [col("name", "naam", "nombre", "име"), col("email", "e-mail", "correo"), col("group", "groep", "grupo", "група")];
+  if (n < 0) throw new HttpError(400, "The first row needs a column called name");
+  const guests = rows.map((r, i) => {
+    const name = text(r[n], 100, `Name on row ${i + 2}`);
+    try {
+      return { name, email: e < 0 ? "" : email(r[e]), group: g < 0 ? "" : String(r[g] ?? "").trim() };
+    } catch (err) {
+      throw new HttpError(400, `Row ${i + 2}: ${err.message}`);
+    }
+  }).filter((x) => x.name);
+  if (!guests.length) throw new HttpError(400, "No names found in the file");
+  if (guests.length > MAX_IMPORT) throw new HttpError(400, `At most ${MAX_IMPORT} guests per file`);
+  return guests;
+}
+
 /**
  * @param {object} input request body: { guests: [{ id, attending, meal, dietary }], note }
  * @param {number[]} partyIds ids of every guest in the party being answered
