@@ -127,6 +127,7 @@
             <option value="none" data-i18n="admin.stat.noReply"></option>
           </select>
           <button type="button" class="ghost" id="csv-export" data-i18n="admin.csvExport" data-i18n-title="tip.csvExport"></button>
+          <button type="button" id="invite-open" data-i18n="admin.invite.open" data-i18n-title="tip.invite"></button>
           <label class="btn ghost" for="csv-file" data-i18n-title="tip.csvImport"><span data-i18n="admin.csvImport"></span><input type="file" id="csv-file" accept=".csv,text/csv" hidden></label>
         </div>
         <p class="muted small" data-i18n="admin.csvHelp"></p>
@@ -135,7 +136,7 @@
           <table class="guest-table">
             <thead><tr>
               <th data-i18n="admin.col.name"></th><th data-i18n="admin.col.group"></th><th data-i18n="admin.col.email"></th>
-              <th data-i18n="admin.col.rsvp"></th><th data-i18n="admin.col.meal"></th><th data-i18n="admin.col.dietary"></th>
+              <th data-i18n="admin.col.invite"></th><th data-i18n="admin.col.rsvp"></th><th data-i18n="admin.col.meal"></th><th data-i18n="admin.col.dietary"></th>
             </tr></thead>
             <tbody id="guest-rows"></tbody>
           </table>
@@ -229,6 +230,39 @@
         <span class="spacer"></span>
         <button type="button" class="ghost" id="g-cancel" data-i18n="admin.cancel"></button>
         <button type="submit" id="g-save" data-i18n="admin.save"></button>
+      </div>
+    </form>
+  </dialog>
+  <dialog class="focus guest" id="invite-dialog">
+    <form id="invite-form">
+      <h2 data-i18n="admin.invite.title"></h2>
+      <p class="setup" id="invite-setup" hidden data-i18n="admin.invite.setup"></p>
+      <p class="muted small" id="invite-tracking" hidden data-i18n="admin.invite.noTracking"></p>
+      <label for="i-from" data-i18n="admin.invite.from"></label>
+      <input id="i-from" maxlength="200" required placeholder="Ana &amp; Marko &lt;hello@your-domain.com&gt;">
+      <label for="i-reply" data-i18n="admin.invite.replyTo"></label>
+      <input id="i-reply" type="email" maxlength="200">
+      <label for="i-subject" data-i18n="admin.invite.subject"></label>
+      <input id="i-subject" maxlength="150" required>
+      <label for="i-message" data-i18n="admin.invite.message"></label>
+      <textarea id="i-message" rows="5" maxlength="5000" required></textarea>
+      <label for="i-button" data-i18n="admin.invite.button"></label>
+      <input id="i-button" maxlength="60">
+      <label for="i-who" data-i18n="admin.invite.who"></label>
+      <select id="i-who">
+        <option value="new" data-i18n="admin.invite.whoNew"></option>
+        <option value="all" data-i18n="admin.invite.whoAll"></option>
+        <option value="shown" data-i18n="admin.invite.whoShown"></option>
+      </select>
+      <p class="muted small" id="i-count"></p>
+      <div class="row-inline">
+        <input id="i-test" type="email" maxlength="200" data-i18n-placeholder="admin.invite.testTo">
+        <button type="button" class="ghost" id="i-test-btn" data-i18n="admin.invite.test" data-i18n-title="tip.inviteTest"></button>
+      </div>
+      <p class="status" id="i-status" role="status"></p>
+      <div class="focus-actions">
+        <button type="button" class="ghost" id="i-cancel" data-i18n="admin.cancel"></button>
+        <button type="submit" id="i-send" data-i18n="admin.invite.send"></button>
       </div>
     </form>
   </dialog>

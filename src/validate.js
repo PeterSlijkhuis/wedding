@@ -87,7 +87,7 @@ export function parseNames(input) {
   return names;
 }
 
-function email(value) {
+export function email(value) {
   const s = text(value, 200, "Email");
   if (s && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) throw new HttpError(400, `"${s}" does not look like an email address`);
   return s.toLowerCase();
@@ -125,6 +125,17 @@ export function parseCsv(input) {
   }
   if (cell || row.length) { row.push(cell); rows.push(row); }
   return rows.filter((r) => r.some((c) => c.trim()));
+}
+
+/** Invitation draft: who it is from, the subject and the couple's message. */
+export function validateInvite(input) {
+  const from = text(input.from, 200, "From");
+  const address = from.match(/<([^>]+)>$/)?.[1] ?? from;
+  if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(address)) throw new HttpError(400, 'From must look like "Ana & Marko <hello@your-domain.com>"');
+  const subject = text(input.subject, 150, "Subject");
+  const message = text(input.message, 5000, "Message");
+  if (!subject || !message) throw new HttpError(400, "Write a subject and a message");
+  return { from, replyTo: email(input.replyTo), subject, message, button: text(input.button, 60, "Button") || "Open our website" };
 }
 
 export const MAX_IMPORT = 500;

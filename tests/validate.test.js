@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { nameKey, validateSite, validateRsvp, parseNames, validatePage, validateGuest, parseCsv, csvGuests } from "../src/validate.js";
+import { nameKey, validateSite, validateRsvp, parseNames, validatePage, validateGuest, parseCsv, csvGuests, validateInvite } from "../src/validate.js";
 
 const rejects = (fn, pattern) => assert.throws(fn, (err) => err.status === 400 && pattern.test(err.message));
 
@@ -91,4 +91,13 @@ test("csvGuests reads name, email and group in any language and order", () => {
     [{ name: "Ana", email: "ana@x.nl", group: "A" }, { name: "Marko", email: "", group: "A" }, { name: "Solo", email: "", group: "" }]);
   rejects(() => csvGuests("email\nx@y.z"), /column called name/);
   rejects(() => csvGuests("name,email\nAna,bad"), /Row 2/);
+});
+
+test("validateInvite", () => {
+  const ok = validateInvite({ from: "Ana & Marko <hi@ana.com>", replyTo: "Ana@ana.com", subject: "Save the date", message: "Hi" });
+  assert.equal(ok.replyTo, "ana@ana.com");
+  assert.equal(ok.button, "Open our website");
+  assert.equal(validateInvite({ from: "hi@ana.com", subject: "s", message: "m" }).from, "hi@ana.com");
+  rejects(() => validateInvite({ from: "Ana", subject: "s", message: "m" }), /From/);
+  rejects(() => validateInvite({ from: "hi@ana.com", subject: "", message: "m" }), /subject/);
 });

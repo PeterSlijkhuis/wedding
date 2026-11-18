@@ -279,6 +279,8 @@ const mark = (g) => (g.attending === null ? "" : g.attending ? " ✓" : " ✗");
 const rsvpKey = (g) => (g.attending === null ? "none" : g.attending ? "yes" : "no");
 const RSVP_LABEL = { yes: "admin.stat.attending", no: "admin.stat.declined", none: "admin.stat.noReply" };
 let parties = [];
+const EMAIL_CLASS = { opened: "yes", clicked: "yes", bounced: "no", complained: "no" };
+let shownGuests = []; // guests in the table right now (after search and filter), for "send to the guests shown"
 
 async function renderGuests() {
   ({ parties } = await get("/api/admin/parties"));
@@ -291,9 +293,11 @@ function drawGuestRows() {
   const filter = $("guest-filter").value;
   const plain = (s) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
   const rows = [];
+  shownGuests = [];
   for (const p of parties) {
     const matches = p.guests.filter((g) => (filter === "all" || rsvpKey(g) === filter)
       && (!query || plain(`${g.name} ${g.email}`).includes(query)));
+    shownGuests.push(...matches);
     matches.forEach((g, i) => {
       const others = p.guests.filter((x) => x !== g).map((x) => x.name).join(", ");
       rows.push(el("tr", { class: i === 0 ? "first" : null, tabindex: "0", title: t("tip.editGuest"),
@@ -301,13 +305,14 @@ function drawGuestRows() {
       el("td", {}, el("b", {}, g.name)),
       el("td", { class: "group" }, others),
       el("td", {}, g.email),
+      el("td", {}, g.emailStatus ? el("span", { class: `pill ${EMAIL_CLASS[g.emailStatus] ?? ""}`, title: g.emailAt ? `${g.emailAt} UTC` : null }, t(`admin.email.${g.emailStatus}`)) : ""),
       el("td", {}, el("span", { class: `pill ${rsvpKey(g)}` }, t(RSVP_LABEL[rsvpKey(g)]))),
       el("td", {}, g.meal),
       el("td", {}, g.dietary)));
     });
   }
   const empty = parties.length ? t("admin.noMatches") : t("admin.noGuests");
-  $("guest-rows").replaceChildren(...(rows.length ? rows : [el("tr", {}, el("td", { colspan: "6", class: "muted" }, empty))]));
+  $("guest-rows").replaceChildren(...(rows.length ? rows : [el("tr", {}, el("td", { colspan: "7", class: "muted" }, empty))]));
 }
 $("guest-search").oninput = drawGuestRows;
 $("guest-filter").onchange = drawGuestRows;
@@ -359,8 +364,8 @@ $("g-delete").onclick = () => {
 // CSV in the same columns the import reads, so an export can be edited in Excel and imported into a fresh site.
 const csvCell = (v) => (/[",;\n\r]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
 $("csv-export").onclick = () => {
-  const lines = [["group", "name", "email", "rsvp", "meal", "dietary", "message"]];
-  for (const p of parties) for (const g of p.guests) lines.push([p.id, g.name, g.email, rsvpKey(g), g.meal, g.dietary, p.note]);
+  const lines = [["group", "name", "email", "rsvp", "meal", "dietary", "message", "invitation"]];
+  for (const p of parties) for (const g of p.guests) lines.push([p.id, g.name, g.email, rsvpKey(g), g.meal, g.dietary, p.note, g.emailStatus]);
   const blob = new Blob(["﻿" + lines.map((l) => l.map(csvCell).join(",")).join("\r\n")], { type: "text/csv" });
   el("a", { href: URL.createObjectURL(blob), download: "guests.csv" }).click();
 };
@@ -378,6 +383,61 @@ $("csv-file").onchange = async (e) => {
     status.className = "status error";
     status.textContent = err.message;
   }
+};
+
+// ---------- Invitation emails ----------
+let inviteMax = 100;
+const recipients = () => {
+  const all = parties.flatMap((p) => p.guests).filter((g) => g.email);
+  const who = $("i-who").value;
+  return who === "new" ? all.filter((g) => !g.emailStatus) : who === "shown" ? shownGuests.filter((g) => g.email) : all;
+};
+const countRecipients = () => {
+  const n = recipients().length;
+  $("i-count").textContent = fmt(t(n > inviteMax ? "admin.invite.tooMany" : "admin.invite.count"), { n, max: inviteMax });
+};
+$("i-who").onchange = countRecipients;
+$("invite-open").onclick = async () => {
+  const { draft, ready, tracking, max } = await get("/api/admin/invite");
+  inviteMax = max;
+  $("invite-setup").hidden = ready;
+  $("invite-tracking").hidden = !ready || tracking;
+  $("i-from").value = draft.from ?? "";
+  $("i-reply").value = draft.replyTo ?? "";
+  $("i-subject").value = draft.subject ?? site.names;
+  $("i-message").value = draft.message ?? "";
+  $("i-button").value = draft.button ?? t("admin.invite.buttonDefault");
+  $("i-status").textContent = "";
+  countRecipients();
+  $("invite-dialog").showModal();
+};
+$("i-cancel").onclick = () => $("invite-dialog").close();
+const inviteDraft = () => ({ from: $("i-from").value, replyTo: $("i-reply").value, subject: $("i-subject").value,
+  message: $("i-message").value, button: $("i-button").value, lang: document.documentElement.lang });
+async function sendInvite(extra, confirmText) {
+  const status = $("i-status");
+  if (confirmText && !confirm(confirmText)) return;
+  try {
+    status.className = "status";
+    status.textContent = t("admin.invite.sending");
+    const { sent } = await post("/api/admin/invite", { ...inviteDraft(), ...extra });
+    status.textContent = fmt(t("admin.invite.sent"), { n: sent });
+    if (!extra.test) await renderGuests();
+    countRecipients();
+  } catch (err) {
+    status.className = "status error";
+    status.textContent = err.message;
+  }
+}
+$("i-test-btn").onclick = () => {
+  if (!$("i-test").reportValidity() || !$("i-test").value) return $("i-test").focus();
+  sendInvite({ test: $("i-test").value });
+};
+$("invite-form").onsubmit = (e) => {
+  e.preventDefault();
+  const list = recipients();
+  if (!list.length || list.length > inviteMax) return countRecipients();
+  sendInvite({ guestIds: list.map((g) => g.id) }, fmt(t("admin.invite.confirm"), { n: list.length }));
 };
 
 async function renderRsvp() {

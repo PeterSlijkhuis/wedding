@@ -196,3 +196,6 @@ dialog.guest .row > div { flex: 1 1 10rem; }
 button.danger { color: #b3261e; }
 .meal-counts { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1.2rem; }
 [data-mode="wide"] .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 44rem; }
+.setup { background: #fff6dc; border-radius: 12px; padding: 0.8rem 1rem; font-size: 0.9rem; }
+.row-inline button { white-space: nowrap; }
+dialog.guest { max-height: 92vh; }
