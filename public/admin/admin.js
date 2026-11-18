@@ -12,7 +12,7 @@ document.documentElement.removeAttribute("style");
 for (const key of ["theme", "layout", "art", "tone"]) delete document.documentElement.dataset[key];
 let site = await get("/api/admin/site");
 $("logout").onclick = logout;
-$("host").textContent = location.host;
+$("host").textContent = new URL(site.siteUrl || location.origin).host;
 
 // ---------- Live preview ----------
 const frame = $("preview");
@@ -55,10 +55,10 @@ for (const [id, mobile] of [["dev-desktop", false], ["dev-mobile", true]]) {
 }
 $("copy").onclick = async () => {
   try {
-    await navigator.clipboard.writeText(location.origin);
+    await navigator.clipboard.writeText(siteOrigin());
     $("copy").textContent = t("admin.copied");
   } catch (err) {
-    $("copy").textContent = location.origin; // Clipboard blocked: show the link so it can be copied by hand.
+    $("copy").textContent = siteOrigin(); // Clipboard blocked: show the link so it can be copied by hand.
   }
   setTimeout(() => { $("copy").textContent = t("admin.share"); }, 2000);
 };
@@ -157,12 +157,13 @@ const FORMS = {
       $("date").value = site.date;
       $("deadline").value = site.rsvpDeadline;
       $("location").value = site.location;
+      $("site-url").value = site.siteUrl;
       $("countdown").checked = site.countdown;
       $("meals").value = site.meals.join(", ");
       for (const lang of Object.keys(LANGUAGES)) $(`tagline-${lang}`).value = site.tagline[lang] ?? "";
     },
     save: () => saveSite({
-      names: $("names").value, date: $("date").value, rsvpDeadline: $("deadline").value, location: $("location").value,
+      names: $("names").value, date: $("date").value, rsvpDeadline: $("deadline").value, location: $("location").value, siteUrl: $("site-url").value,
       countdown: $("countdown").checked, meals: $("meals").value,
       tagline: Object.fromEntries(Object.keys(LANGUAGES).map((lang) => [lang, $(`tagline-${lang}`).value])),
     }),
@@ -464,7 +465,8 @@ $("invite-form").onsubmit = (e) => {
 
 // ---------- Sign-up link ----------
 let signup = { enabled: false, code: "" };
-const signupUrl = () => `${location.origin}/signup?code=${signup.code}`;
+const siteOrigin = () => site.siteUrl || location.origin;
+const signupUrl = () => `${siteOrigin()}/signup?code=${signup.code}`;
 function drawSignup() {
   $("signup-on").checked = signup.enabled;
   $("signup-url").textContent = signup.enabled ? signupUrl() : "";

@@ -252,5 +252,7 @@
   "admin.signup.renew": "New link",
   "admin.signup.copy": "Copy link",
   "admin.badge.signup": "signed up",
-  "tip.signupRenew": "Make a new link; the old one stops working"
+  "tip.signupRenew": "Make a new link; the old one stops working",
+  "admin.siteUrl": "Website address (your own domain, used in emails)",
+  "tip.siteUrl": "Emails and the Copy link button use this address"
 }

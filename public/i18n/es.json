@@ -252,5 +252,7 @@
   "admin.signup.renew": "Nuevo enlace",
   "admin.signup.copy": "Copiar enlace",
   "admin.badge.signup": "registrado",
-  "tip.signupRenew": "Crea un enlace nuevo; el anterior deja de funcionar"
+  "tip.signupRenew": "Crea un enlace nuevo; el anterior deja de funcionar",
+  "admin.siteUrl": "Dirección web (tu dominio, se usa en los correos)",
+  "tip.siteUrl": "Los correos y el botón Copiar enlace usan esta dirección"
 }

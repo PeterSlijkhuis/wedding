@@ -5,7 +5,7 @@ import { PALETTES, FONTS, resolveDesign } from "../public/js/designs.js";
 import { safeEqual } from "./auth.js";
 import { validateSite, validatePage, validateRsvp, validatePhoto, validateGuest, csvGuests, validateInvite, validateSignup, email, parseNames, nameKey, PAGE_SLUGS, LANGS } from "./validate.js";
 
-const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", location: "", countdown: false, tagline: {}, theme: "sage", palette: "", font: "", layout: "", art: "", motion: "", accent: "", coverPhoto: 0, coverShape: "rounded", pagePhotos: {}, photoFocus: {}, meals: [] };
+const DEFAULT_SITE = { names: "Our Wedding", date: "", rsvpDeadline: "", location: "", siteUrl: "", countdown: false, tagline: {}, theme: "sage", palette: "", font: "", layout: "", art: "", motion: "", accent: "", coverPhoto: 0, coverShape: "rounded", pagePhotos: {}, photoFocus: {}, meals: [] };
 
 async function loadSite(env) {
   const raw = await getSetting(env, "site");
@@ -281,7 +281,8 @@ const routes = {
     const date = site.date ? new Intl.DateTimeFormat(lang, { dateStyle: "full", timeZone: "UTC" }).format(new Date(`${site.date}T12:00:00Z`)) : "";
     const signup = await loadSignup(env);
     // A save the date links to the sign-up form while it is switched on; everything else links to the site.
-    const link = draft.kind === "savedate" && signup.enabled ? `${url.origin}/signup?code=${signup.code}&lang=${lang}` : `${url.origin}/?lang=${lang}`;
+    const origin = site.siteUrl || url.origin;
+    const link = draft.kind === "savedate" && signup.enabled ? `${origin}/signup?code=${signup.code}&lang=${lang}` : `${origin}/?lang=${lang}`;
     const mail = invitationEmail({ names: site.names, date, location: site.location, message: draft.message, siteUrl: link, button: draft.button, design: emailDesign(site) });
     const base = { from: draft.from, subject: draft.subject, html: mail.html, text: mail.text, ...(draft.replyTo ? { reply_to: draft.replyTo } : {}) };
     // env.RESEND_URL only exists in local tests, to point at a fake Resend.

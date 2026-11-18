@@ -252,5 +252,7 @@
   "admin.signup.renew": "Nieuwe link",
   "admin.signup.copy": "Link kopiëren",
   "admin.badge.signup": "aangemeld",
-  "tip.signupRenew": "Maak een nieuwe link; de oude werkt niet meer"
+  "tip.signupRenew": "Maak een nieuwe link; de oude werkt niet meer",
+  "admin.siteUrl": "Websiteadres (je eigen domein, gebruikt in e-mails)",
+  "tip.siteUrl": "E-mails en de knop Link kopiëren gebruiken dit adres"
 }

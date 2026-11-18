@@ -65,8 +65,19 @@ export function validateSite(input) {
     if (!ok) throw new HttpError(400, "A focus point is two whole percentages, like [50, 30]");
     photoFocus[id] = point;
   }
+  // The address guests use (your own domain). Emails link there instead of wherever the admin happens to be open.
+  let siteUrl = text(input.siteUrl, 200, "Website address");
+  if (siteUrl) {
+    try {
+      const u = new URL(/^https?:\/\//.test(siteUrl) ? siteUrl : `https://${siteUrl}`);
+      if (u.protocol !== "https:") throw new Error("not https");
+      siteUrl = u.origin;
+    } catch {
+      throw new HttpError(400, "Website address must look like https://our-wedding.com");
+    }
+  }
   return {
-    names: text(input.names, 100, "Names"), date, location: text(input.location, 200, "Location"), rsvpDeadline,
+    names: text(input.names, 100, "Names"), date, location: text(input.location, 200, "Location"), rsvpDeadline, siteUrl,
     countdown: input.countdown === true, tagline, theme, ...design, accent, coverPhoto, coverShape, pagePhotos, photoFocus, meals,
   };
 }

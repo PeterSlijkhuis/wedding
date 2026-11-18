@@ -54,6 +54,9 @@ Invitations go out through [Resend](https://resend.com). The free plan sends 100
    npx wrangler secret put RESEND_WEBHOOK_SECRET
    ```
 
+5. Put the site on your domain: in the Cloudflare dashboard, open Workers & Pages, then wedding, Settings, Domains & Routes, Add, Custom domain. Then fill in Website address under Event details, so emails link there and not to workers.dev.
+6. Keep emails out of spam: add a DMARC record in Cloudflare DNS (type TXT, name `_dmarc.<your domain>`, content `v=DMARC1; p=none;`), send from the same domain the links point to, write a real message rather than only a button, and send yourself a test first. Brand-new domains often land in spam for the first few sends; ask the first guests to mark it "not spam".
+
 Then open Guest list, choose Send emails, pick Save the date, Invitation or Thank you, send yourself a test, and send. Turn on the sign-up link in Guest list first if the save the date should let guests add themselves; renew the link if it spreads too far (at most 30 sign-ups an hour). Each send covers at most 100 guests; send the rest the next day.
 
 ## Tests

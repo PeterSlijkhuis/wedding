@@ -107,3 +107,9 @@ test("validateSignup", () => {
   rejects(() => validateSignup({ name: "Lena", email: "" }), /name and email/);
   rejects(() => validateSignup({ name: "L", email: "l@x.si", others: Array(11).fill("x").join("\n") }), /At most 10/);
 });
+
+test("validateSite keeps only the origin of the website address", () => {
+  assert.equal(validateSite({ siteUrl: "weddingdemo.petervaleria.com/home" }).siteUrl, "https://weddingdemo.petervaleria.com");
+  assert.equal(validateSite({ siteUrl: "" }).siteUrl, "");
+  rejects(() => validateSite({ siteUrl: "http://x.com" }), /Website address/);
+});
